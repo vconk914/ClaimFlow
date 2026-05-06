@@ -8,3 +8,53 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface AnalyzePhotoRequest {
+  /** Base64-encoded JPEG image data */
+  imageBase64: string;
+  /** Unique identifier for the photo */
+  photoId: string;
+}
+
+export interface PhotoAnalysis {
+  photoId: string;
+  /** A 1-2 sentence description of the photo */
+  description: string;
+  /** Array of descriptive keywords */
+  tags: string[];
+  /** Scene type: indoor, outdoor, or mixed */
+  sceneType: string;
+  /** Time of day: day, night, dawn, dusk, or unknown */
+  timeOfDay: string;
+}
+
+export interface PhotoIndexEntry {
+  id: string;
+  description: string;
+  tags: string[];
+  sceneType: string;
+  timeOfDay: string;
+}
+
+export interface SearchPhotosRequest {
+  /** Natural language search query */
+  query: string;
+  /** List of indexed photo descriptions to search through */
+  photos: PhotoIndexEntry[];
+}
+
+export interface PhotoSearchResult {
+  id: string;
+  /** Score between 0 and 1 */
+  relevanceScore: number;
+  /** Brief explanation of why this photo matches */
+  matchReason: string;
+}
+
+export interface SearchPhotosResponse {
+  results: PhotoSearchResult[];
+}
+
+export interface ErrorResponse {
+  error: string;
+}

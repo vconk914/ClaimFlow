@@ -5,18 +5,28 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  AnalyzePhotoRequest,
+  ErrorResponse,
+  HealthStatus,
+  PhotoAnalysis,
+  SearchPhotosRequest,
+  SearchPhotosResponse,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +109,177 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * Accepts a base64-encoded image and returns an AI-generated description and tags
+ * @summary Analyze a photo with AI
+ */
+export const getAnalyzePhotoUrl = () => {
+  return `/api/photos/analyze`;
+};
+
+export const analyzePhoto = async (
+  analyzePhotoRequest: AnalyzePhotoRequest,
+  options?: RequestInit,
+): Promise<PhotoAnalysis> => {
+  return customFetch<PhotoAnalysis>(getAnalyzePhotoUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(analyzePhotoRequest),
+  });
+};
+
+export const getAnalyzePhotoMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof analyzePhoto>>,
+    TError,
+    { data: BodyType<AnalyzePhotoRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof analyzePhoto>>,
+  TError,
+  { data: BodyType<AnalyzePhotoRequest> },
+  TContext
+> => {
+  const mutationKey = ["analyzePhoto"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof analyzePhoto>>,
+    { data: BodyType<AnalyzePhotoRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return analyzePhoto(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AnalyzePhotoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof analyzePhoto>>
+>;
+export type AnalyzePhotoMutationBody = BodyType<AnalyzePhotoRequest>;
+export type AnalyzePhotoMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Analyze a photo with AI
+ */
+export const useAnalyzePhoto = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof analyzePhoto>>,
+    TError,
+    { data: BodyType<AnalyzePhotoRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof analyzePhoto>>,
+  TError,
+  { data: BodyType<AnalyzePhotoRequest> },
+  TContext
+> => {
+  return useMutation(getAnalyzePhotoMutationOptions(options));
+};
+
+/**
+ * Given a search query and list of indexed photo descriptions, returns ranked matches
+ * @summary Search photos by natural language query
+ */
+export const getSearchPhotosUrl = () => {
+  return `/api/photos/search`;
+};
+
+export const searchPhotos = async (
+  searchPhotosRequest: SearchPhotosRequest,
+  options?: RequestInit,
+): Promise<SearchPhotosResponse> => {
+  return customFetch<SearchPhotosResponse>(getSearchPhotosUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(searchPhotosRequest),
+  });
+};
+
+export const getSearchPhotosMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof searchPhotos>>,
+    TError,
+    { data: BodyType<SearchPhotosRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof searchPhotos>>,
+  TError,
+  { data: BodyType<SearchPhotosRequest> },
+  TContext
+> => {
+  const mutationKey = ["searchPhotos"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof searchPhotos>>,
+    { data: BodyType<SearchPhotosRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return searchPhotos(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SearchPhotosMutationResult = NonNullable<
+  Awaited<ReturnType<typeof searchPhotos>>
+>;
+export type SearchPhotosMutationBody = BodyType<SearchPhotosRequest>;
+export type SearchPhotosMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Search photos by natural language query
+ */
+export const useSearchPhotos = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof searchPhotos>>,
+    TError,
+    { data: BodyType<SearchPhotosRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof searchPhotos>>,
+  TError,
+  { data: BodyType<SearchPhotosRequest> },
+  TContext
+> => {
+  return useMutation(getSearchPhotosMutationOptions(options));
+};

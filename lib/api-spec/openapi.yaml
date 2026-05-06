@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: photos
+    description: Photo analysis and search operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,68 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /photos/analyze:
+    post:
+      operationId: analyzePhoto
+      tags: [photos]
+      summary: Analyze a photo with AI
+      description: Accepts a base64-encoded image and returns an AI-generated description and tags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzePhotoRequest"
+      responses:
+        "200":
+          description: Photo analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhotoAnalysis"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /photos/search:
+    post:
+      operationId: searchPhotos
+      tags: [photos]
+      summary: Search photos by natural language query
+      description: Given a search query and list of indexed photo descriptions, returns ranked matches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchPhotosRequest"
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchPhotosResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +97,106 @@ components:
           type: string
       required:
         - status
-
+    AnalyzePhotoRequest:
+      type: object
+      properties:
+        imageBase64:
+          type: string
+          description: Base64-encoded JPEG image data
+        photoId:
+          type: string
+          description: Unique identifier for the photo
+      required:
+        - imageBase64
+        - photoId
+    PhotoAnalysis:
+      type: object
+      properties:
+        photoId:
+          type: string
+        description:
+          type: string
+          description: A 1-2 sentence description of the photo
+        tags:
+          type: array
+          items:
+            type: string
+          description: Array of descriptive keywords
+        sceneType:
+          type: string
+          description: "Scene type: indoor, outdoor, or mixed"
+        timeOfDay:
+          type: string
+          description: "Time of day: day, night, dawn, dusk, or unknown"
+      required:
+        - photoId
+        - description
+        - tags
+        - sceneType
+        - timeOfDay
+    PhotoIndexEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        sceneType:
+          type: string
+        timeOfDay:
+          type: string
+      required:
+        - id
+        - description
+        - tags
+        - sceneType
+        - timeOfDay
+    SearchPhotosRequest:
+      type: object
+      properties:
+        query:
+          type: string
+          description: Natural language search query
+        photos:
+          type: array
+          items:
+            $ref: "#/components/schemas/PhotoIndexEntry"
+          description: List of indexed photo descriptions to search through
+      required:
+        - query
+        - photos
+    PhotoSearchResult:
+      type: object
+      properties:
+        id:
+          type: string
+        relevanceScore:
+          type: number
+          description: Score between 0 and 1
+        matchReason:
+          type: string
+          description: Brief explanation of why this photo matches
+      required:
+        - id
+        - relevanceScore
+        - matchReason
+    SearchPhotosResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/PhotoSearchResult"
+      required:
+        - results
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

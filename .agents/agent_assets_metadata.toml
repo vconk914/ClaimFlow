@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "vutpSvjt2XYuQBMO8nw_3"
+uri = "file://artifacts/mobile/assets/images/icon.png"
+type = "image"
+title = "smart photo search icon"
