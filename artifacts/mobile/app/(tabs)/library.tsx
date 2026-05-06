@@ -180,7 +180,7 @@ export default function LibraryScreen() {
           numColumns={COLS}
           contentContainerStyle={[
             styles.gridContent,
-            { paddingBottom: bottomInset + 100 },
+            { paddingBottom: 16 },
           ]}
           columnWrapperStyle={{ gap: GAP }}
           ItemSeparatorComponent={() => <View style={{ height: GAP }} />}
@@ -192,15 +192,26 @@ export default function LibraryScreen() {
 
       <View
         style={[
-          styles.fab,
+          styles.buttonBar,
           {
-            bottom: bottomInset + 16,
-            backgroundColor: isIndexing ? colors.destructive : colors.primary,
+            paddingBottom: bottomInset + 12,
+            backgroundColor: colors.background,
           },
         ]}
       >
         <TouchableOpacity
-          style={styles.fabInner}
+          style={[
+            styles.fabInner,
+            {
+              backgroundColor: isIndexing ? colors.destructive : colors.primary,
+              borderRadius: 16,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            },
+          ]}
           onPress={isIndexing ? handleCancel : handleAddPhotos}
         >
           {isIndexing ? (
@@ -270,16 +281,9 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { fontSize: 20, textAlign: "center" },
   emptySub: { fontSize: 15, textAlign: "center", lineHeight: 22 },
-  fab: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+  buttonBar: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
   fabInner: {
     flexDirection: "row",
