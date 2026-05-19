@@ -112,29 +112,25 @@ export function scrubClaim(claim: {
     errors.push({ field: "dob", severity: "error", message: "Date of birth is required.", fix: "Enter the patient's date of birth." });
   }
 
-  // Insurance ID
-  if (!claim.insuranceId.trim()) {
-    errors.push({ field: "insuranceId", severity: "error", message: "Insurance ID is required.", fix: "Enter the insurance member ID exactly as shown on the insurance card." });
-  } else if (!/^[A-Z]{2,4}-\d{6,}$/.test(claim.insuranceId.trim())) {
+  // Insurance ID — recommended but not required
+  if (claim.insuranceId.trim() && !/^[A-Z]{2,4}-\d{6,}$/.test(claim.insuranceId.trim())) {
     errors.push({ field: "insuranceId", severity: "warning", message: "Insurance ID format looks unusual (expected: XXX-0000000).", fix: "Verify the member ID with the insurance card. Common formats include a 2-4 letter prefix followed by a hyphen and 6+ digits (e.g., BCB-4821039)." });
   }
 
-  // CPT
+  // CPT — optional; only validate if provided
   const cptCode = claim.cpt.trim();
-  if (!cptCode) {
-    errors.push({ field: "cpt", severity: "error", message: "CPT code is required.", fix: "Enter a valid 5-digit CPT procedure code." });
-  } else if (!CPT_CODES[cptCode]) {
+  if (cptCode && !CPT_CODES[cptCode]) {
     errors.push({ field: "cpt", severity: "warning", message: `CPT ${cptCode} is not in our reference list — verify it is valid and active.`, fix: "Check the AMA CPT code book or your billing software to confirm this code is active and billable for the current year." });
   }
 
-  // ICD-10
+  // ICD-10 — optional; only validate if provided
   const icd = claim.icd10.trim().toUpperCase();
-  if (!icd) {
-    errors.push({ field: "icd10", severity: "error", message: "ICD-10 diagnosis code is required.", fix: "Enter a valid ICD-10-CM diagnosis code." });
-  } else if (!/^[A-Z]\d{2}(\.\w+)?$/.test(icd)) {
-    errors.push({ field: "icd10", severity: "error", message: `"${icd}" is not a valid ICD-10 format. Codes must include a decimal (e.g., M54.5, not M545).`, fix: "ICD-10-CM codes follow the pattern: one letter + two digits + optional decimal + up to 4 characters. Check your EHR or an ICD-10 lookup tool." });
-  } else if (!ICD10_CODES[icd]) {
-    errors.push({ field: "icd10", severity: "warning", message: `ICD-10 ${icd} is not in our common code reference — verify it is billable.`, fix: "Confirm the diagnosis code is as specific as possible (avoid 'unspecified' codes when a more specific code exists) and is covered by the payer for this service." });
+  if (icd) {
+    if (!/^[A-Z]\d{2}(\.\w+)?$/.test(icd)) {
+      errors.push({ field: "icd10", severity: "warning", message: `"${icd}" is not a valid ICD-10 format. Codes should include a decimal (e.g., M54.5, not M545).`, fix: "ICD-10-CM codes follow the pattern: one letter + two digits + optional decimal + up to 4 characters. Check your EHR or an ICD-10 lookup tool." });
+    } else if (!ICD10_CODES[icd]) {
+      errors.push({ field: "icd10", severity: "warning", message: `ICD-10 ${icd} is not in our common code reference — verify it is billable.`, fix: "Confirm the diagnosis code is as specific as possible and is covered by the payer for this service." });
+    }
   }
 
   // Clinical compatibility rules (only run if both CPT and ICD-10 are present and recognized)
