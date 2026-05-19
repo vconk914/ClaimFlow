@@ -1,0 +1,196 @@
+Build the next enterprise feature expansion for ClaimFlow.
+
+This update should make ClaimFlow feel like a modern AI-assisted medical revenue cycle platform used by real clinics and billing teams.
+
+Add the following major systems:
+
+---------------------------------------------------
+1. INTERACTIVE DEMO SCENARIOS
+---------------------------------------------------
+
+Create a “Demo Scenarios” panel with realistic preset workflows.
+
+Include scenarios like:
+- NY No-Fault urgent care denial
+- PT authorization exceeded
+- Medicare modifier issue
+- Behavioral health diagnosis mismatch
+- Orthopedic surgery coding conflict
+- Preventive visit billed incorrectly
+- ER visit with missing injury documentation
+- Workers Comp missing accident details
+
+When a scenario is selected:
+- auto-fill the Claims Scrubber
+- simulate payer response
+- trigger live denial detection
+- explain exactly why the claim fails
+- guide the user step-by-step through fixing it
+
+Add:
+- “Before Fix” vs “After Fix” comparison
+- denial risk score
+- estimated reimbursement delay
+- estimated financial impact
+- payer-specific denial explanation
+
+Keep all demo data simulated/local only.
+
+---------------------------------------------------
+2. CLAIM HEALTH SCORE SYSTEM
+---------------------------------------------------
+
+Add a Claim Health Score engine.
+
+Every scrubbed claim should generate:
+- overall score (0–100)
+- denial risk level
+- reimbursement confidence
+- coding completeness score
+- authorization risk
+- modifier accuracy score
+
+Examples:
+- 94/100 → Low Denial Risk
+- 67/100 → Moderate Risk
+- 42/100 → High Denial Risk
+
+Add:
+- animated circular score gauge
+- color-coded severity indicators
+- recommendations to improve score
+- payer-specific scoring adjustments
+- specialty-specific scoring adjustments
+
+Display this:
+- in the scrubber
+- in analytics
+- in demo scenarios
+- in claim history
+
+---------------------------------------------------
+3. TEAM / USER ROLE SYSTEM
+---------------------------------------------------
+
+Add enterprise team roles.
+
+Include:
+- Admin
+- Billing Manager
+- Medical Biller
+- Front Desk
+- Coder
+- Provider
+
+Each role should have:
+- customized dashboard widgets
+- different permissions
+- role-specific workflow suggestions
+- unique analytics visibility
+
+Examples:
+- Front Desk sees registration and eligibility warnings
+- Coders see CPT/ICD compatibility details
+- Billing Managers see denial analytics and reimbursement trends
+- Providers see documentation improvement prompts
+
+Add:
+- user switcher dropdown
+- team management page
+- activity log
+- simulated team productivity analytics
+
+Keep authentication simulated/local only.
+
+---------------------------------------------------
+4. CLAIM TIMELINE & CLAIM LIFECYCLE
+---------------------------------------------------
+
+Add a full Claim Timeline system.
+
+Every claim should visually progress through stages:
+- Created
+- Scrubbed
+- Submitted
+- Payer Review
+- Pending Documentation
+- Denied
+- Corrected
+- Resubmitted
+- Approved
+- Paid
+
+Add:
+- animated timeline UI
+- timestamps
+- payer status badges
+- denial events
+- correction history
+- estimated payment dates
+
+Allow:
+- simulated claim progression
+- timeline filtering
+- timeline analytics
+- “View Claim Journey” modal
+
+Make the timeline visually premium and enterprise-grade.
+
+---------------------------------------------------
+5. CLAIMFLOW AI ASSISTANT
+---------------------------------------------------
+
+Add an embedded “ClaimFlow AI Assistant” panel.
+
+The AI Assistant should:
+- explain denial risks
+- suggest modifiers
+- recommend CPT/ICD corrections
+- explain payer-specific rules
+- identify missing documentation
+- suggest cleaner coding workflows
+- educate users in plain English
+
+Examples:
+- “Modifier -25 may be needed due to dual preventive and E&M services.”
+- “NY No-Fault claims typically require accident details within 30 days.”
+- “This PT authorization expires after visit 6 under this payer profile.”
+
+Add:
+- conversational assistant UI
+- AI suggestion cards
+- “Why?” expandable explanations
+- specialty-aware responses
+- payer-aware responses
+- state-aware responses
+
+Add a floating AI assistant button throughout the app.
+
+All AI responses should remain simulated/local only.
+
+---------------------------------------------------
+DESIGN & UX REQUIREMENTS
+---------------------------------------------------
+
+The application should feel like:
+- a premium enterprise SaaS platform
+- modern healthcare revenue cycle software
+- AI-assisted operational tooling
+
+Use:
+- Tailwind CSS
+- polished transitions
+- modern cards
+- subtle animations
+- enterprise dashboard layouts
+- responsive design
+
+The app should feel:
+- clean
+- trustworthy
+- intelligent
+- workflow-driven
+- highly visual
+
+Do not use real patient data or external APIs.
+All workflows, analytics, payers, claims, and AI responses must remain simulated/local only.

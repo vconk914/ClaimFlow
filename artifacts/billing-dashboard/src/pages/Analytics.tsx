@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
-import { Search, Filter, Download, TrendingUp, CheckCircle, XCircle, Clock, ChevronUp, ChevronDown } from "lucide-react";
+import { Search, Filter, Download, TrendingUp, CheckCircle, XCircle, Clock, ChevronUp, ChevronDown, GitBranch } from "lucide-react";
 import type { Claim, ClaimStatus } from "@/data/mockData";
+import ClaimTimelineModal from "@/components/ClaimTimelineModal";
 
 interface Props {
   claims: Claim[];
@@ -40,6 +41,7 @@ export default function Analytics({ claims }: Props) {
   const [statusFilter, setStatusFilter] = useState<ClaimStatus | "All">("All");
   const [sortField, setSortField] = useState<SortField>("submittedAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [viewingClaim, setViewingClaim] = useState<Claim | null>(null);
 
   const stats = useMemo(() => ({
     total: claims.length,
@@ -199,6 +201,7 @@ export default function Analytics({ claims }: Props) {
                 >
                   <span className="flex items-center gap-1">Submitted <SortIcon field="submittedAt" /></span>
                 </th>
+                <th className="px-3 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Journey</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -240,12 +243,24 @@ export default function Analytics({ claims }: Props) {
                     <br />
                     {new Date(claim.submittedAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                   </td>
+                  <td className="px-3 py-3.5">
+                    <button
+                      onClick={() => setViewingClaim(claim)}
+                      className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-medium transition-colors whitespace-nowrap"
+                    >
+                      <GitBranch className="w-3 h-3" />
+                      View
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+      {viewingClaim && (
+        <ClaimTimelineModal claim={viewingClaim} onClose={() => setViewingClaim(null)} />
+      )}
     </div>
   );
 }

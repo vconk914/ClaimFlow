@@ -631,6 +631,206 @@ const S6_PREVENTIVE: DemoScenario = {
   ],
 };
 
+// ─── Scenario 7: ER Visit — Missing Injury Documentation ─────────────────────
+
+const S7_ER_MISSING_DOCS: DemoScenario = {
+  id: "er-missing-docs",
+  title: "ER Visit — Missing Injury Documentation",
+  subtitle: "High-complexity ED claim lacks Glasgow Coma Scale, mechanism of injury, and CT results",
+  regionId: "national",
+  regionLabel: "National",
+  specialty: "Urgent & Emergency Care",
+  payerType: "Commercial (PPO)",
+  color: "orange",
+
+  denialRiskScore: 78,
+  riskLevel: "high",
+  estimatedDelayDays: 45,
+  financialImpact: 218,
+  billedAmount: 350,
+
+  prefill: {
+    patient: "Derek Nunez",
+    dob: "1990-11-03",
+    insuranceId: "BCB-ED-9920145",
+    cpt: "99284",
+    icd10: "S06.0X0A",
+    payer: "BlueCross BlueShield",
+    amount: "350.00",
+    specialtyId: "urgent-emergency",
+  },
+
+  beforeErrors: [
+    {
+      field: "documentation",
+      severity: "error",
+      title: "Glasgow Coma Scale Score Not Documented",
+      message: "CPT 99284 (Emergency Department, High Complexity) requires documentation of a high-complexity medical decision. For head injury claims with S06.0X0A (concussion, initial encounter), BlueCross requires the Glasgow Coma Scale (GCS) score in the medical record. Absence of GCS score may result in downcode to 99283 (moderate complexity) or denial.",
+      suggestion: "Ensure the GCS score (e.g., GCS 15 — Eyes 4, Verbal 5, Motor 6) is explicitly documented in the nursing and physician encounter notes. Retrospective documentation may be accepted within 48 hours of service.",
+    },
+    {
+      field: "icd10",
+      severity: "error",
+      title: "Mechanism of Injury Not Specified",
+      message: "S06.0X0A (Concussion without loss of consciousness) for an MVA or fall requires an external cause of injury code (V00–Y99). BlueCross requires at least one ICD-10 external cause code to adjudicate high-complexity ED visits for trauma. Without it, the claim is flagged for medical review.",
+      suggestion: "Add the appropriate external cause code. For motor vehicle accident: V49.40XA (Car occupant injured, initial). For fall: W19.XXXA (Unspecified fall, initial). Place the external cause code as an additional diagnosis in Box 21.",
+    },
+    {
+      field: "cpt",
+      severity: "warning",
+      title: "CT Results Absent from Claim Documentation",
+      message: "CPT 99284 (high complexity) requires documented data review of 3+ data elements (ordering tests, reviewing results, ordering imaging, reviewing imaging). If a CT head was ordered but results are not referenced in the physician note, the level of MDM cannot be supported.",
+      suggestion: "Ensure the physician note explicitly states: test ordered (CT head non-contrast), results reviewed (e.g., 'CT head negative for intracranial hemorrhage'), and clinical interpretation. This supports the high-complexity MDM level required for 99284.",
+    },
+  ],
+
+  payerResponseCode: "CO-50",
+  payerResponseText: "DENIED — CO-50: These are non-covered services because this is not deemed a 'medical necessity' by the payer. CPT 99284 downcoded to 99283 — medical decision-making complexity cannot be verified without GCS documentation, external cause code, and documented imaging review. Additional documentation request (ADR) issued.",
+
+  afterCpt: "99284",
+  afterIcd10: "S06.0X0A",
+  afterPayer: "BlueCross BlueShield",
+  afterModifier: "",
+  afterNote: "Amend note to include GCS 15, add V49.40XA (MVA external cause), document CT head review.",
+  afterExplanation: "Amend the encounter documentation to include: (1) GCS score at triage and reassessment, (2) external cause code V49.40XA or W19.XXXA in Box 21, (3) explicit CT head result summary in the physician MDM section. Resubmit CPT 99284 with the amended record attached.",
+  afterReimbursement: 350,
+  afterPayerResponse: "APPROVED — CPT 99284 with S06.0X0A + V49.40XA. High-complexity MDM verified: GCS 15 documented, CT head negative reviewed, external cause established. BlueCross contracted rate: $350.00. Processing time: 14 days.",
+
+  steps: [
+    {
+      type: "problem",
+      title: "High-Complexity ED Visit With Documentation Gaps",
+      description: "Derek Nunez presented to the ED following a motor vehicle accident with reported head pain and brief disorientation. The attending physician billed CPT 99284 (high complexity), but three critical documentation elements were absent from the medical record: GCS score, CT results summary, and external cause of injury code.",
+    },
+    {
+      type: "rule",
+      title: "E/M Documentation: Medical Decision-Making Requirements",
+      description: "Post-2021 E/M guidelines require high complexity MDM (CPT 99284–99285) to document: (1) multiple diagnosis or management options, (2) extensive data review (3+ elements), and (3) high risk of complications. For trauma cases, GCS scoring, imaging orders and results, and external cause coding are standard payer requirements.",
+    },
+    {
+      type: "fix",
+      title: "Amend Note: Add GCS Score and CT Review",
+      description: "The physician must amend the encounter note to explicitly document: GCS score at initial assessment (e.g., GCS 15 — fully intact), result of CT head ordered (e.g., 'CT head non-contrast: no acute intracranial pathology'), and the clinical interpretation that informed the disposition decision.",
+    },
+    {
+      type: "fix",
+      title: "Add ICD-10 External Cause Code",
+      description: "Add V49.40XA (Car occupant in collision, unspecified, initial encounter) or W19.XXXA (Unspecified fall, initial encounter) as an additional diagnosis code in Box 21. External cause codes are required by most commercial payers for trauma claims to establish the accident mechanism and coordinate with auto insurance if applicable.",
+    },
+    {
+      type: "result",
+      title: "Resubmission: $350 Full Reimbursement",
+      description: "With amended documentation, CPT 99284 is fully supported. BlueCross will process at the contracted rate of $350. The downcode to 99283 ($132 reimbursement) is reversed. Future ED claims should use a documentation checklist for trauma visits: GCS, imaging ordered + reviewed, external cause code, and disposition rationale.",
+    },
+  ],
+};
+
+// ─── Scenario 8: Workers' Comp — Missing Accident Details ────────────────────
+
+const S8_WORKERS_COMP: DemoScenario = {
+  id: "workers-comp-missing-details",
+  title: "Workers' Comp — Missing Accident Details",
+  subtitle: "Office visit claim missing accident date, employer name, claim number, and adjuster contact",
+  regionId: "national",
+  regionLabel: "National",
+  specialty: "Family Medicine",
+  payerType: "Workers' Compensation",
+  color: "red",
+
+  denialRiskScore: 92,
+  riskLevel: "critical",
+  estimatedDelayDays: 60,
+  financialImpact: 420,
+  billedAmount: 420,
+
+  prefill: {
+    patient: "James Kowalski",
+    dob: "1978-06-22",
+    insuranceId: "LM-WC-4471089",
+    cpt: "99213",
+    icd10: "M54.5",
+    payer: "Liberty Mutual Workers' Comp",
+    amount: "420.00",
+    specialtyId: "family-medicine",
+  },
+
+  beforeErrors: [
+    {
+      field: "submission",
+      severity: "error",
+      title: "Workers' Comp Claim Number Required",
+      message: "Liberty Mutual Workers' Comp requires the employer's WC claim number in Box 10d (or equivalent field on state WC forms) before adjudicating any medical bill. Without a valid claim number, the bill cannot be matched to the open workers' comp case and will be returned unprocessed.",
+      suggestion: "Contact the employer's HR department or the Liberty Mutual adjuster to obtain the workers' comp claim number (format: WC-XXXX-XXXXXX). Do not submit without it. Obtain the adjuster's name, phone, and fax prior to any WC billing.",
+    },
+    {
+      field: "submission",
+      severity: "error",
+      title: "Accident Date and Employer Information Missing",
+      message: "Workers' compensation claims require: (1) date of injury (not date of service), (2) employer name and address, (3) employer FEIN (Federal Employer Identification Number), and (4) nature of injury description. These are mandatory fields on all state WC billing forms (CMS-1500 or state-specific). Missing any one of these results in bill rejection.",
+      suggestion: "Collect the following from the patient at intake: exact date of workplace injury, employer name and full address, employer phone, and a brief description of how the injury occurred (e.g., 'patient lifted 50-lb box at warehouse, felt sudden low back pain'). Create a WC intake checklist.",
+    },
+    {
+      field: "icd10",
+      severity: "warning",
+      title: "ICD-10 M54.5 — Work-Relatedness Not Documented",
+      message: "M54.5 (Low back pain) is a valid code but does not indicate work-relatedness. Workers' comp payers require the treating physician's clinical opinion that the condition is causally related to the workplace injury. Without a causality statement, Liberty Mutual may dispute liability and deny the claim.",
+      suggestion: "The treating physician must document: 'Patient presents with low back pain causally related to workplace lifting injury on [date]. In my clinical opinion, the injury is work-related.' This statement should appear in the assessment/plan section of the encounter note.",
+    },
+    {
+      field: "cpt",
+      severity: "info",
+      title: "WC Fee Schedule: State-Specific Rates Apply",
+      message: "Workers' comp bills are not paid at the practice's standard charge master rate ($420). Each state has a mandatory WC fee schedule. Billing $420 for CPT 99213 may exceed the state fee schedule maximum, and Liberty Mutual will reduce payment to the schedule rate without notice.",
+      suggestion: "Check your state's WC medical fee schedule (available from the state Workers' Compensation Board) to determine the allowed amount for CPT 99213. Configure a separate fee schedule in your billing system for WC payers.",
+    },
+  ],
+
+  payerResponseCode: "WC-REJECT-01",
+  payerResponseText: "RETURNED UNPROCESSED — WC-REJECT-01: Bill cannot be adjudicated without a valid workers' compensation claim number, date of injury, and employer identification. Please resubmit with all required fields completed on the appropriate state WC billing form. Contact adjuster: [ADJUSTER NAME REQUIRED].",
+
+  afterCpt: "99213",
+  afterIcd10: "M54.5",
+  afterPayer: "Liberty Mutual Workers' Comp",
+  afterModifier: "",
+  afterNote: "Add WC claim #, date of injury, employer info, causality statement, and state WC fee schedule rate.",
+  afterExplanation: "Resubmit with: (1) WC claim number in Box 10d, (2) date of injury (separate from DOS), (3) employer name, address, and FEIN, (4) physician causality statement in the attached encounter note, and (5) billing at the state WC fee schedule rate for CPT 99213.",
+  afterReimbursement: 380,
+  afterPayerResponse: "APPROVED — CPT 99213 for work-related low back pain (M54.5). Claim number verified. Causality established per treating physician statement. Payment at state WC fee schedule rate: $380.00. Liberty Mutual adjuster: M. Reynolds. EFT processing: 21 business days.",
+
+  steps: [
+    {
+      type: "problem",
+      title: "Bill Returned: Missing Workers' Comp Required Fields",
+      description: "James Kowalski injured his lower back lifting heavy equipment at his warehouse job. The practice submitted a CMS-1500 using standard billing — without the workers' comp claim number, date of injury, employer identification, or causality statement. Liberty Mutual returned the bill unprocessed within 5 business days.",
+    },
+    {
+      type: "rule",
+      title: "Workers' Comp Billing: 4 Mandatory Fields",
+      description: "Every workers' comp medical bill requires: (1) WC claim number assigned by the insurer, (2) date of injury (separate from and usually earlier than the date of service), (3) employer name, address, and FEIN, and (4) treating physician's clinical causality opinion. These are statutory requirements in all 50 states, not payer preferences.",
+    },
+    {
+      type: "rule",
+      title: "State WC Fee Schedules Override Charge Master Rates",
+      description: "Workers' compensation is regulated at the state level. Each state mandates a fee schedule that controls the maximum reimbursement for every CPT code. Billing at your standard charge master rate is incorrect — payers will silently reduce payment to the fee schedule maximum without explanation. In some states, overbilling may trigger compliance review.",
+    },
+    {
+      type: "fix",
+      title: "WC Intake Checklist: Collect All Required Information",
+      description: "Implement a workers' comp intake checklist to collect at first visit: (1) WC insurer name and adjuster contact, (2) claim number, (3) date of injury, (4) employer name, address, and phone, (5) nature of injury description. Train front desk staff to identify WC cases at scheduling and complete the checklist before the patient is seen.",
+    },
+    {
+      type: "fix",
+      title: "Physician: Document Causality in Encounter Note",
+      description: "The treating physician must include a causality statement in the assessment section: 'In my clinical opinion, patient's lumbar strain (M54.5) is causally related to the described workplace lifting injury on [date of injury]. The patient's reported mechanism of injury is consistent with the clinical findings.' This statement is required for WC liability acceptance.",
+    },
+    {
+      type: "result",
+      title: "Resubmission: $380 Approved at State Fee Schedule",
+      description: "With complete WC billing fields and causality documentation, Liberty Mutual approves the claim at the state WC fee schedule rate ($380 for CPT 99213). The $40 difference from the charge master ($420) is a contractual adjustment — not billable to the patient. Future WC claims submitted with complete intake data have a 94% first-pass acceptance rate.",
+    },
+  ],
+};
+
 // ─── Exported collection ──────────────────────────────────────────────────────
 
 export const DEMO_SCENARIOS: DemoScenario[] = [
@@ -640,6 +840,8 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
   S4_BH_MISMATCH,
   S5_ORTHO_CONFLICT,
   S6_PREVENTIVE,
+  S7_ER_MISSING_DOCS,
+  S8_WORKERS_COMP,
 ];
 
 // ─── Risk level helpers ───────────────────────────────────────────────────────

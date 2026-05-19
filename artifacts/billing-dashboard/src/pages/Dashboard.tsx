@@ -1,10 +1,12 @@
-import { TrendingUp, TrendingDown, FileCheck, Clock, DollarSign, AlertTriangle, ArrowUpRight, MapPin, Building2, ShieldAlert } from "lucide-react";
+import { TrendingUp, TrendingDown, FileCheck, Clock, DollarSign, AlertTriangle, ArrowUpRight, MapPin, Building2, ShieldAlert, ChevronRight } from "lucide-react";
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Area, AreaChart,
 } from "recharts";
 import { DENIAL_REASONS, PAYER_DATA, MONTHLY_TREND } from "@/data/mockData";
 import { useRegion } from "@/context/RegionalContext";
+import { useTeam } from "@/context/TeamContext";
+import { ROLE_CONFIGS } from "@/data/teamRoles";
 import type { StateId } from "@/data/regionalData";
 
 const RADIAN = Math.PI / 180;
@@ -72,6 +74,8 @@ const STATE_ACCENT: Record<StateId, { dot: string; text: string; bg: string; bor
 
 export default function Dashboard() {
   const { stateId, config } = useRegion();
+  const { activeUser } = useTeam();
+  const roleConfig = ROLE_CONFIGS[activeUser.role];
   const accent = STATE_ACCENT[stateId];
   const topPayers = config.payers.slice(0, 4);
   const statePattern = config.denialPatterns.find(d => d.stateSpecific);
@@ -129,6 +133,22 @@ export default function Dashboard() {
           trendLabel="-$3,240 vs last month"
           color="bg-amber-500"
         />
+      </div>
+
+      {/* ── Role Workflow Strip ── */}
+      <div className={`rounded-xl border ${roleConfig.bg} border-current/10 px-4 py-3`}>
+        <div className="flex items-center gap-2 mb-2">
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${roleConfig.badge}`}>{roleConfig.label}</span>
+          <p className={`text-xs font-semibold ${roleConfig.color}`}>Your workflow priorities</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {roleConfig.workflowSuggestions.slice(0, 3).map((s, i) => (
+            <div key={i} className="flex items-center gap-1.5 bg-card/70 border border-current/10 rounded-lg px-3 py-1.5">
+              <ChevronRight className={`w-3 h-3 shrink-0 ${roleConfig.color}`} />
+              <span className={`text-xs ${roleConfig.color}`}>{s}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── Regional Intelligence Panel ── */}

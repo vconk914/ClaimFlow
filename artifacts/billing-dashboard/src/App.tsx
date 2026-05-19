@@ -1,17 +1,20 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { LayoutDashboard, Stethoscope, BarChart3, Bell, Settings, ChevronRight, Globe, MapPin, CheckCircle2, FlaskConical } from "lucide-react";
+import { LayoutDashboard, Stethoscope, BarChart3, Bell, Settings, ChevronRight, Globe, MapPin, CheckCircle2, FlaskConical, ChevronDown, Users } from "lucide-react";
 import logoUrl from "/logo.png";
 import Dashboard from "@/pages/Dashboard";
 import ClaimsScrubber from "@/pages/ClaimsScrubber";
 import Analytics from "@/pages/Analytics";
 import SettingsPage from "@/pages/Settings";
 import DemoScenarios from "@/pages/DemoScenarios";
+import AIAssistant from "@/components/AIAssistant";
 import { INITIAL_CLAIMS, type Claim } from "@/data/mockData";
 import { RegionalProvider, useRegion } from "@/context/RegionalContext";
 import { STATE_OPTIONS, type StateId } from "@/data/regionalData";
 import type { ScenarioPrefill } from "@/data/demoScenarios";
+import { TeamProvider, useTeam } from "@/context/TeamContext";
+import { TEAM_MEMBERS, ROLE_CONFIGS } from "@/data/teamRoles";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false } },
@@ -109,6 +112,60 @@ function OnboardingModal() {
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── User switcher ─────────────────────────────────────────────────────────────
+
+function UserSwitcher() {
+  const { activeUser, setActiveUserId } = useTeam();
+  const [open, setOpen] = useState(false);
+  const roleConfig = ROLE_CONFIGS[activeUser.role];
+  return (
+    <div className="relative mt-2">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent transition-colors"
+      >
+        <div className={`w-7 h-7 rounded-full ${activeUser.avatar} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+          {activeUser.initials}
+        </div>
+        <div className="flex-1 min-w-0 text-left">
+          <p className="text-xs font-medium text-sidebar-foreground truncate">{activeUser.name}</p>
+          <p className="text-xs text-sidebar-foreground/50 truncate">{roleConfig.label}</p>
+        </div>
+        <Users className="w-3.5 h-3.5 text-sidebar-foreground/40 shrink-0" />
+      </button>
+      {open && (
+        <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50">
+          <div className="px-3 py-2 border-b border-border">
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Switch User</p>
+          </div>
+          <div className="py-1 max-h-64 overflow-y-auto">
+            {TEAM_MEMBERS.map(member => {
+              const rc = ROLE_CONFIGS[member.role];
+              const isActive = member.id === activeUser.id;
+              return (
+                <button
+                  key={member.id}
+                  onClick={() => { setActiveUserId(member.id); setOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-muted text-left transition-colors ${isActive ? "bg-primary/5" : ""}`}
+                >
+                  <div className={`w-6 h-6 rounded-full ${member.avatar} flex items-center justify-center text-white text-[10px] font-bold shrink-0`}>
+                    {member.initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs font-medium truncate ${isActive ? "text-primary" : "text-foreground"}`}>{member.name}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{rc.label}</p>
+                  </div>
+                  {isActive && <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -211,16 +268,8 @@ function AppShell() {
               {activeTab === "settings" && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
             </button>
 
-            {/* User avatar */}
-            <div className="flex items-center gap-3 px-3 py-2 mt-2">
-              <div className="w-7 h-7 rounded-full bg-blue-400 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                SJ
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-sidebar-foreground truncate">Sarah Johnson</p>
-                <p className="text-xs text-sidebar-foreground/50 truncate">Billing Manager</p>
-              </div>
-            </div>
+            {/* User switcher */}
+            <UserSwitcher />
           </div>
         </aside>
 
@@ -261,6 +310,7 @@ function AppShell() {
           </main>
         </div>
       </div>
+      <AIAssistant />
     </>
   );
 }
@@ -270,7 +320,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <RegionalProvider>
-          <AppShell />
+          <TeamProvider>
+            <AppShell />
+          </TeamProvider>
         </RegionalProvider>
       </TooltipProvider>
     </QueryClientProvider>

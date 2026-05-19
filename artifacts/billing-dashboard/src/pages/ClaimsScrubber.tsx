@@ -10,6 +10,7 @@ import {
 } from "@/data/mockData";
 import type { Claim } from "@/data/mockData";
 import type { ScenarioPrefill } from "@/data/demoScenarios";
+import { computeHealthScore, DENIAL_RISK_CONFIG, AUTH_RISK_CONFIG } from "@/data/claimHealthScore";
 
 interface ClaimsFormData {
   patient: string; dob: string; insuranceId: string; cpt: string; icd10: string;
@@ -505,6 +506,11 @@ export default function ClaimsScrubber({ onSubmit, prefill, prefillKey }: Props)
   const hasWarnings = warnings.length > 0;
   const isClean = scrubResult !== null && !hasErrors && !hasWarnings;
 
+  const healthScore = useMemo(() => {
+    if (scrubResult === null) return null;
+    return computeHealthScore({ cpt: form.cpt, icd10: form.icd10, payer, specialtyId, errors: scrubResult });
+  }, [scrubResult, form.cpt, form.icd10, payer, specialtyId]);
+
   const sc = SPECIALTY_COLORS[specialty.color];
 
   return (
@@ -800,6 +806,64 @@ export default function ClaimsScrubber({ onSubmit, prefill, prefillKey }: Props)
 
           {scrubResult !== null && !isScrubbing && (
             <>
+              {/* ── Claim Health Score ── */}
+              {healthScore && (() => {
+                const drc = DENIAL_RISK_CONFIG[healthScore.denialRisk];
+                const arc = AUTH_RISK_CONFIG[healthScore.authorizationRisk];
+                const circ = 2 * Math.PI * 24;
+                return (
+                  <div className={`rounded-xl border-2 p-4 ${drc.bg} ${drc.border}`}>
+                    <div className="flex items-start gap-4">
+                      <div className="relative w-[56px] h-[56px] shrink-0">
+                        <svg viewBox="0 0 64 64" className="w-full h-full -rotate-90">
+                          <circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" strokeWidth="6" className="text-muted/25" strokeDasharray={circ} />
+                          <circle cx="32" cy="32" r="24" fill="none" strokeWidth="6" className={drc.ring} strokeDasharray={circ} strokeDashoffset={circ - (circ * healthScore.overall / 100)} strokeLinecap="round" />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-sm font-bold text-foreground leading-none">{healthScore.overall}</span>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <p className="text-xs font-bold text-foreground">Claim Health Score</p>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${drc.bg} ${drc.color} ${drc.border}`}>{drc.label}</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { label: "Coding",   value: healthScore.codingCompleteness },
+                            { label: "Modifier", value: healthScore.modifierAccuracy },
+                          ].map(({ label, value }) => (
+                            <div key={label}>
+                              <p className="text-[9px] text-muted-foreground font-medium mb-0.5">{label}</p>
+                              <div className="h-1 bg-muted rounded-full overflow-hidden mb-0.5">
+                                <div className={`h-full rounded-full ${drc.bar}`} style={{ width: `${value}%` }} />
+                              </div>
+                              <p className="text-[9px] font-bold text-foreground">{value}%</p>
+                            </div>
+                          ))}
+                          <div>
+                            <p className="text-[9px] text-muted-foreground font-medium mb-0.5">Auth Risk</p>
+                            <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded ${arc.badge} ${arc.text}`}>
+                              {healthScore.authorizationRisk.toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {healthScore.recommendations.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-current/10 space-y-1.5">
+                        {healthScore.recommendations.slice(0, 2).map((rec, i) => (
+                          <div key={i} className="flex items-start gap-1.5">
+                            <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${drc.bar}`} />
+                            <p className={`text-[10px] leading-relaxed ${drc.color}`}>{rec.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               <div className={`rounded-xl border p-4 flex items-start gap-3 ${
                 isClean ? "bg-emerald-50 border-emerald-200"
                 : hasErrors ? "bg-red-50 border-red-200"
