@@ -114,6 +114,21 @@ export const CPT_CODES: Record<string, { description: string; category: string; 
   "90834": { description: "Psychotherapy, 45 min", category: "Mental Health", fee: 158 },
   "90837": { description: "Psychotherapy, 60 min", category: "Mental Health", fee: 198 },
   "90847": { description: "Family Psychotherapy w/ Patient Present", category: "Mental Health", fee: 165 },
+  // Emergency Medicine
+  "99281": { description: "Emergency Dept Visit — Level 1, Minor Problem", category: "Emergency", fee: 58 },
+  "99282": { description: "Emergency Dept Visit — Level 2, Low Complexity", category: "Emergency", fee: 98 },
+  "99283": { description: "Emergency Dept Visit — Level 3, Moderate Complexity", category: "Emergency", fee: 168 },
+  "99284": { description: "Emergency Dept Visit — Level 4, High Complexity", category: "Emergency", fee: 248 },
+  "99285": { description: "Emergency Dept Visit — Level 5, High Complexity + Threat to Life", category: "Emergency", fee: 348 },
+  // OR / Surgery
+  "44950": { description: "Appendectomy, Open", category: "Surgery", fee: 3400 },
+  "44970": { description: "Appendectomy, Laparoscopic", category: "Surgery", fee: 4200 },
+  "47562": { description: "Cholecystectomy, Laparoscopic", category: "Surgery", fee: 5800 },
+  "47600": { description: "Cholecystectomy, Open", category: "Surgery", fee: 7200 },
+  "27236": { description: "Treatment of Femoral Neck Fracture — Internal Fixation", category: "Surgery", fee: 6800 },
+  "25600": { description: "Treatment of Colles Fracture — Closed, w/o Manipulation", category: "Surgery", fee: 890 },
+  "27759": { description: "Treatment of Tibial Shaft Fracture — Intramedullary Nail", category: "Surgery", fee: 5200 },
+  "10061": { description: "Incision and Drainage, Complex Abscess or Carbuncle", category: "Surgery", fee: 310 },
 };
 
 // ─── ICD-10 Reference Library ─────────────────────────────────────────────────
@@ -178,6 +193,38 @@ export const ICD10_CODES: Record<string, { description: string; category: string
   "G43.909":{ description: "Migraine, Unspecified, Not Intractable", category: "Neurological" },
   // Family History / Other
   "Z82.49": { description: "Family Hx of Ischemic Heart Disease", category: "Family History" },
+  // Emergency / Acute Presentations
+  "R07.9":    { description: "Chest Pain, Unspecified", category: "Emergency" },
+  "R07.4":    { description: "Chest Pain on Breathing (Pleuritic)", category: "Emergency" },
+  "R06.00":   { description: "Dyspnea (Shortness of Breath), Unspecified", category: "Emergency" },
+  "R06.09":   { description: "Other Forms of Dyspnea", category: "Emergency" },
+  "R10.9":    { description: "Unspecified Abdominal Pain", category: "Emergency" },
+  "R10.0":    { description: "Acute Abdomen", category: "Emergency" },
+  "R10.11":   { description: "Right Upper Quadrant Pain", category: "Emergency" },
+  "R10.31":   { description: "Right Lower Quadrant Pain", category: "Emergency" },
+  "R50.9":    { description: "Fever, Unspecified", category: "Emergency" },
+  "E86.0":    { description: "Dehydration", category: "Emergency" },
+  "E86.1":    { description: "Hypovolemia (Volume Depletion)", category: "Emergency" },
+  // Additional Injury (ER/Surgical)
+  "S93.401A": { description: "Sprain of Right Ankle, Unspecified Ligament — Initial", category: "Injury" },
+  "S93.402A": { description: "Sprain of Left Ankle, Unspecified Ligament — Initial", category: "Injury" },
+  "S72.001A": { description: "Fracture of Right Femoral Head — Initial, Closed", category: "Injury" },
+  "S72.002A": { description: "Fracture of Left Femoral Head — Initial, Closed", category: "Injury" },
+  "S52.001A": { description: "Fracture of Upper End of Right Ulna — Initial, Closed", category: "Injury" },
+  "S01.411A": { description: "Laceration w/o Foreign Body, Right Cheek — Initial", category: "Injury" },
+  "S21.011A": { description: "Laceration w/o Foreign Body, Right Chest Wall — Initial", category: "Injury" },
+  "S61.211A": { description: "Laceration w/o Foreign Body, Right Hand — Initial", category: "Injury" },
+  // Surgical Diagnoses
+  "K37":      { description: "Unspecified Appendicitis", category: "Gastrointestinal" },
+  "K35.80":   { description: "Acute Appendicitis w/o Abscess", category: "Gastrointestinal" },
+  "K35.89":   { description: "Acute Appendicitis with Other Complications", category: "Gastrointestinal" },
+  "K80.20":   { description: "Calculus of Gallbladder w/o Cholecystitis — w/o Obstruction", category: "Gastrointestinal" },
+  "K81.0":    { description: "Acute Cholecystitis", category: "Gastrointestinal" },
+  "K81.1":    { description: "Chronic Cholecystitis", category: "Gastrointestinal" },
+  "K80.00":   { description: "Calculus of Gallbladder w/ Acute Cholecystitis", category: "Gastrointestinal" },
+  "Z48.89":   { description: "Encounter for Other Postprocedural Aftercare", category: "Preventive" },
+  "Z48.810":  { description: "Encounter for Surgical Aftercare Following Surgery on Sense Organs", category: "Preventive" },
+  "T81.40XA": { description: "Infection Following Procedure, Unspecified — Initial", category: "Injury" },
 };
 
 // ─── CPT ↔ ICD-10 compatibility map ──────────────────────────────────────────
@@ -311,6 +358,70 @@ export const COMPAT_RULES: CompatRule[] = [
     fix: () => "Family history codes (Z80–Z84) must be secondary diagnoses. Place the primary condition being treated first and move this to a secondary position on the claim.",
     liveLabel: "Family history codes cannot be primary diagnosis — must be secondary",
   },
+  // ER E&M with wellness diagnosis
+  {
+    match: (cpt, icd) => ["99281","99282","99283","99284","99285"].includes(cpt) && ["Z00.00","Z00.01","Z23"].includes(icd),
+    severity: "error",
+    message: (cpt, cptD, icd, icdD) => `CPT ${cpt} (${cptD}) billed with ${icd} (${icdD}) will be denied. ED visits cannot be billed for scheduled wellness encounters.`,
+    fix: () => "ED visit codes (99281–99285) require an acute, unscheduled medical complaint. Replace the wellness diagnosis with the acute presenting diagnosis (e.g., R07.9 chest pain, R06.00 dyspnea, R10.9 abdominal pain).",
+    liveLabel: "Emergency dept codes cannot be billed with a wellness or preventive diagnosis",
+  },
+  // ER E&M with preventive CPT family
+  {
+    match: (cpt, _, __, icdCat) => ["99281","99282","99283","99284","99285"].includes(cpt) && icdCat === "Preventive",
+    severity: "error",
+    message: (cpt, cptD, icd, icdD) => `ED visit CPT ${cpt} (${cptD}) paired with preventive diagnosis ${icd} (${icdD}) is not a valid billing combination.`,
+    fix: () => "Emergency visits require an acute presenting diagnosis. Use the primary reason the patient came to the ED (chest pain, shortness of breath, injury, etc.) as the principal ICD-10 code.",
+    liveLabel: "ED visit codes require an acute presenting complaint, not a preventive diagnosis",
+  },
+  // Appendectomy requires appendicitis
+  {
+    match: (cpt, icd) => ["44950","44970"].includes(cpt) && !["K37","K35.80","K35.89"].includes(icd),
+    severity: "error",
+    message: (cpt, cptD, icd, icdD) => `CPT ${cpt} (${cptD}) requires an appendicitis diagnosis. "${icdD}" (${icd}) does not justify an appendectomy.`,
+    fix: () => "Use K35.80 (Acute Appendicitis w/o Abscess), K35.89 (Acute Appendicitis with Complications), or K37 (Unspecified Appendicitis). Payers will deny appendectomy claims without a matching appendicitis diagnosis.",
+    liveLabel: "Appendectomy requires an appendicitis diagnosis (K35.80, K37)",
+  },
+  // Laparoscopic cholecystectomy requires gallbladder diagnosis
+  {
+    match: (cpt, icd) => ["47562","47600"].includes(cpt) && !["K80.20","K81.0","K81.1","K80.00"].includes(icd),
+    severity: "error",
+    message: (cpt, cptD, icd, icdD) => `CPT ${cpt} (${cptD}) requires a gallbladder pathology diagnosis. "${icdD}" (${icd}) does not support this procedure.`,
+    fix: () => "Use K81.0 (Acute Cholecystitis), K80.20 (Gallstones w/o Cholecystitis), or K80.00 (Gallstones w/ Acute Cholecystitis). Prior authorization is typically required with imaging documentation.",
+    liveLabel: "Cholecystectomy requires a gallbladder diagnosis (K81.0, K80.20)",
+  },
+  // Hip fracture ORIF requires hip/femoral fracture
+  {
+    match: (cpt, icd) => cpt === "27236" && !["S72.001A","S72.002A"].includes(icd),
+    severity: "error",
+    message: (_, __, icd, icdD) => `CPT 27236 (Femoral Neck Fracture Fixation) requires a femoral fracture diagnosis. "${icdD}" (${icd}) does not support this procedure.`,
+    fix: () => "Use S72.001A (Right Femoral Head Fracture, Initial) or S72.002A (Left). Surgical fixation of hip fractures requires laterality-specific fracture coding. Payers cross-check procedure and fracture site.",
+    liveLabel: "Femoral fracture fixation requires a matching hip/femur fracture diagnosis",
+  },
+  // Wrist/forearm fracture repair requires matching fracture
+  {
+    match: (cpt, icd) => cpt === "25600" && !["S52.001A"].includes(icd),
+    severity: "warning",
+    message: (_, __, icd, icdD) => `CPT 25600 (Colles Fracture Treatment) paired with "${icdD}" (${icd}) — verify the fracture site matches the procedure performed.`,
+    fix: () => "Colles fracture treatment (25600) requires a distal radius/ulna fracture code. Use S52.001A for ulnar fractures or the appropriate S52.5xx code for distal radius fractures.",
+    liveLabel: "Wrist fracture treatment requires a distal forearm fracture diagnosis",
+  },
+  // High-level ER code with very minor diagnosis
+  {
+    match: (cpt, _, __, icdCat) => ["99284","99285"].includes(cpt) && ["Preventive","Family History"].includes(icdCat),
+    severity: "warning",
+    message: (cpt, cptD, icd, icdD) => `High-acuity ED code ${cpt} (${cptD}) with "${icdD}" (${icd}) is likely to trigger a medical necessity audit.`,
+    fix: () => "Level 4–5 ED visits require documented high medical decision complexity or threat to life. Ensure the primary diagnosis reflects the severity that justified this E&M level. Add objective clinical findings to the chart notes.",
+    liveLabel: "High-acuity ED code with low-acuity diagnosis may trigger a medical necessity review",
+  },
+  // Surgical code with wellness/preventive primary
+  {
+    match: (cpt, _, __, icdCat) => ["44950","44970","47562","47600","27236","27759","25600"].includes(cpt) && icdCat === "Preventive",
+    severity: "error",
+    message: (cpt, cptD, icd, icdD) => `Surgical CPT ${cpt} (${cptD}) cannot be billed with a preventive/wellness diagnosis "${icdD}" (${icd}).`,
+    fix: () => "Replace the preventive diagnosis with the pathology that necessitated surgery (e.g., K81.0 for cholecystectomy, K35.80 for appendectomy, S72.001A for hip fracture fixation). Post-op aftercare should use Z48.89.",
+    liveLabel: "Surgical procedure codes cannot be paired with preventive/wellness diagnoses",
+  },
 ];
 
 // ─── Specialty Configurations ─────────────────────────────────────────────────
@@ -441,24 +552,45 @@ export const SPECIALTY_CONFIGS: Record<string, SpecialtyConfig> = {
     cptCodes: ["99385","99386","99387","99395","99396","99397","80053","85027","83036","84443","82947","93000","71046"],
     icd10Codes: ["Z00.00","Z00.01","Z23","Z01.00","Z12.11","I10","E78.5","E11.9"],
   },
-  "urgent-care": {
-    id: "urgent-care",
-    label: "Urgent Care",
+  "urgent-emergency": {
+    id: "urgent-emergency",
+    label: "Urgent & Emergency Care",
     color: "amber",
-    description: "Acute, unscheduled visits — high documentation requirements for E&M level and new vs. established patient status.",
+    description: "Acute, unscheduled urgent care and ED visits — strict E&M level documentation, acute diagnosis requirements, and ER-specific code compliance.",
     checks: [
+      "ED-level E&M codes (99281–99285) require acute, unscheduled presenting complaint",
       "E&M level must match documented medical decision complexity",
-      "New vs. established patient status verified (affects CPT selection)",
-      "Acute diagnosis required — chronic conditions need acute exacerbation note",
-      "Procedure necessity must be documented with acute primary diagnosis",
+      "New vs. established patient status verified for urgent care codes",
+      "Acute diagnosis required — wellness codes are never valid for ED/urgent visits",
     ],
     commonDenials: [
+      "ED code (99281–99285) billed with a wellness or preventive diagnosis",
       "E&M level too high for documented complexity in chart notes",
       "New patient code (992xx) billed for an established patient",
-      "Fracture or procedure code without supporting imaging or exam",
+      "Fracture or laceration CPT without supporting imaging or clinical exam note",
     ],
-    cptCodes: ["99203","99204","99205","99213","99214","71046","93000","10060"],
-    icd10Codes: ["J06.9","J20.9","J18.9","N39.0","R51.9","R05.9","S92.501A","K21.0","R00.0"],
+    cptCodes: ["99281","99282","99283","99284","99285","99203","99204","99213","99214","71046","93000","10060","10061"],
+    icd10Codes: ["R07.9","R07.4","R06.00","R10.9","R10.0","R10.31","R50.9","E86.0","J06.9","J18.9","N39.0","S92.501A","S93.401A","S01.411A","S61.211A","R51.9","R00.0"],
+  },
+  "or-surgical": {
+    id: "or-surgical",
+    label: "OR / Surgical",
+    color: "red",
+    description: "Operative and pre/post-surgical billing — anatomical site matching, prior authorization for major procedures, and post-op modifier validation.",
+    checks: [
+      "Procedure diagnosis must match the anatomical site of surgery (appendix, gallbladder, joint, etc.)",
+      "Laparoscopic vs. open approach affects CPT code selection (47562 vs. 47600)",
+      "Prior authorization required for elective surgery — verify before submitting",
+      "Post-op aftercare billed with Z48.89, not the original surgical diagnosis",
+    ],
+    commonDenials: [
+      "Appendectomy or cholecystectomy without matching organ pathology diagnosis",
+      "Fracture fixation with mismatched anatomical site or laterality",
+      "Modifier -51 or -59 missing on same-session multiple procedures",
+      "Surgical claim with wellness/preventive primary diagnosis",
+    ],
+    cptCodes: ["44950","44970","47562","47600","29881","29827","27447","27130","27236","27759","25600","28450","10060","10061","20610"],
+    icd10Codes: ["K37","K35.80","K35.89","K81.0","K81.1","K80.20","K80.00","M17.11","M17.12","M16.11","M75.1","M23.61","S72.001A","S72.002A","S52.001A","S92.501A","S83.511A","S46.011A","Z48.89","T81.40XA"],
   },
 };
 

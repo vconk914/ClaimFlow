@@ -55,6 +55,7 @@ const CATEGORY_BADGE: Record<string, string> = {
   "Genitourinary": "bg-indigo-100 text-indigo-700",
   "Neurological": "bg-purple-100 text-purple-700",
   "Family History": "bg-slate-100 text-slate-600",
+  "Emergency": "bg-red-100 text-red-700",
 };
 
 // Color map for specialty accents
@@ -69,6 +70,7 @@ const SPECIALTY_COLORS: Record<string, {
   teal:    { dot: "bg-teal-500",    bg: "bg-teal-50",    border: "border-teal-200",   text: "text-teal-700",   heading: "text-teal-900",   badge: "bg-teal-100",   badgeText: "text-teal-700",   pillActive: "bg-teal-600 text-white"    },
   emerald: { dot: "bg-emerald-500", bg: "bg-emerald-50", border: "border-emerald-200",text: "text-emerald-700",heading: "text-emerald-900",badge: "bg-emerald-100",badgeText: "text-emerald-700",pillActive: "bg-emerald-600 text-white" },
   amber:   { dot: "bg-amber-500",   bg: "bg-amber-50",   border: "border-amber-200",  text: "text-amber-700",  heading: "text-amber-900",  badge: "bg-amber-100",  badgeText: "text-amber-700",  pillActive: "bg-amber-600 text-white"   },
+  red:     { dot: "bg-red-500",     bg: "bg-red-50",     border: "border-red-200",    text: "text-red-700",    heading: "text-red-900",    badge: "bg-red-100",    badgeText: "text-red-700",    pillActive: "bg-red-600 text-white"     },
 };
 
 // ── Highlight helper ──────────────────────────────────────────────────────────
@@ -370,7 +372,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
   const [showAllCpt, setShowAllCpt] = useState(false);
   const [showAllIcd, setShowAllIcd] = useState(false);
 
-  const specialty = SPECIALTY_CONFIGS[specialtyId];
+  const specialty = SPECIALTY_CONFIGS[specialtyId] ?? SPECIALTY_CONFIGS["family-medicine"];
 
   // Build filtered code maps
   const cptMap = useMemo(() => {
