@@ -1,26 +1,29 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { LayoutDashboard, Stethoscope, BarChart3, Bell, Settings, ChevronRight, Globe, MapPin, CheckCircle2 } from "lucide-react";
+import { LayoutDashboard, Stethoscope, BarChart3, Bell, Settings, ChevronRight, Globe, MapPin, CheckCircle2, FlaskConical } from "lucide-react";
 import logoUrl from "/logo.png";
 import Dashboard from "@/pages/Dashboard";
 import ClaimsScrubber from "@/pages/ClaimsScrubber";
 import Analytics from "@/pages/Analytics";
 import SettingsPage from "@/pages/Settings";
+import DemoScenarios from "@/pages/DemoScenarios";
 import { INITIAL_CLAIMS, type Claim } from "@/data/mockData";
 import { RegionalProvider, useRegion } from "@/context/RegionalContext";
 import { STATE_OPTIONS, type StateId } from "@/data/regionalData";
+import type { ScenarioPrefill } from "@/data/demoScenarios";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false } },
 });
 
-type Tab = "dashboard" | "scrubber" | "analytics" | "settings";
+type Tab = "dashboard" | "scrubber" | "analytics" | "demo" | "settings";
 
 const NAV_ITEMS: { id: Tab; label: string; icon: any; badge?: string }[] = [
   { id: "dashboard",  label: "Dashboard",       icon: LayoutDashboard },
   { id: "scrubber",   label: "Claims Scrubber", icon: Stethoscope, badge: "23" },
   { id: "analytics",  label: "Analytics",       icon: BarChart3 },
+  { id: "demo",       label: "Demo Scenarios",  icon: FlaskConical },
 ];
 
 const STATE_DOT_COLORS: Record<StateId, string> = {
@@ -115,11 +118,19 @@ function OnboardingModal() {
 function AppShell() {
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [claims, setClaims] = useState<Claim[]>(INITIAL_CLAIMS);
+  const [prefillData, setPrefillData] = useState<ScenarioPrefill | null>(null);
+  const [prefillKey, setPrefillKey] = useState(0);
   const { stateId, config } = useRegion();
 
   function handleClaimSubmit(claim: Claim) {
     setClaims(prev => [claim, ...prev]);
     setActiveTab("analytics");
+  }
+
+  function loadScenarioInScrubber(prefill: ScenarioPrefill) {
+    setPrefillData(prefill);
+    setPrefillKey(k => k + 1);
+    setActiveTab("scrubber");
   }
 
   const dotColor = STATE_DOT_COLORS[stateId];
@@ -243,8 +254,9 @@ function AppShell() {
           {/* Page content */}
           <main className="flex-1 overflow-y-auto p-6">
             {activeTab === "dashboard"  && <Dashboard />}
-            {activeTab === "scrubber"   && <ClaimsScrubber onSubmit={handleClaimSubmit} />}
+            {activeTab === "scrubber"   && <ClaimsScrubber onSubmit={handleClaimSubmit} prefill={prefillData} prefillKey={prefillKey} />}
             {activeTab === "analytics"  && <Analytics claims={claims} />}
+            {activeTab === "demo"       && <DemoScenarios onLoadInScrubber={loadScenarioInScrubber} />}
             {activeTab === "settings"   && <SettingsPage />}
           </main>
         </div>

@@ -9,12 +9,17 @@ import {
   type ScrubError, type SpecialtyConfig,
 } from "@/data/mockData";
 import type { Claim } from "@/data/mockData";
+import type { ScenarioPrefill } from "@/data/demoScenarios";
 
 interface ClaimsFormData {
   patient: string; dob: string; insuranceId: string; cpt: string; icd10: string;
 }
 
-interface Props { onSubmit: (claim: Claim) => void; }
+interface Props {
+  onSubmit: (claim: Claim) => void;
+  prefill?: ScenarioPrefill | null;
+  prefillKey?: number;
+}
 
 const FALLBACK_PAYERS = ["BlueCross", "Medicare", "Medicaid", "Aetna", "UnitedHealth", "Humana", "Cigna", "Other"];
 
@@ -363,7 +368,7 @@ function useLiveCompat(cpt: string, icd10: string) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function ClaimsScrubber({ onSubmit }: Props) {
+export default function ClaimsScrubber({ onSubmit, prefill, prefillKey }: Props) {
   const { config, stateId } = useRegion();
   const regionalPayers = config.payers.map(p => p.name);
   const payerList = regionalPayers.length > 0 ? [...regionalPayers, "Other"] : FALLBACK_PAYERS;
@@ -371,6 +376,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
   const [form, setForm] = useState<ClaimsFormData>({ patient: "", dob: "", insuranceId: "", cpt: "", icd10: "" });
   const [payer, setPayer] = useState(payerList[0]);
   const [amount, setAmount] = useState("");
+
   const [scrubResult, setScrubResult] = useState<ScrubError[] | null>(null);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -380,6 +386,31 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
   const [infoCollapsed, setInfoCollapsed] = useState(false);
   const [showAllCpt, setShowAllCpt] = useState(false);
   const [showAllIcd, setShowAllIcd] = useState(false);
+
+  // ── Demo scenario prefill + auto-scrub ──
+  useEffect(() => {
+    if (!prefill || !prefillKey) return;
+    const newForm: ClaimsFormData = {
+      patient:     prefill.patient,
+      dob:         prefill.dob,
+      insuranceId: prefill.insuranceId,
+      cpt:         prefill.cpt,
+      icd10:       prefill.icd10,
+    };
+    setForm(newForm);
+    setPayer(prefill.payer);
+    setAmount(prefill.amount);
+    if (prefill.specialtyId) setSpecialtyId(prefill.specialtyId);
+    setScrubResult(null);
+    setSubmitted(false);
+    setInfoCollapsed(false);
+    setIsScrubbing(true);
+    const timer = setTimeout(() => {
+      setScrubResult(scrubClaim(newForm));
+      setIsScrubbing(false);
+    }, 1400);
+    return () => clearTimeout(timer);
+  }, [prefillKey]);
 
   const specialty = SPECIALTY_CONFIGS[specialtyId] ?? SPECIALTY_CONFIGS["family-medicine"];
 
