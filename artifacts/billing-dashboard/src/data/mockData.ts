@@ -129,6 +129,35 @@ export const CPT_CODES: Record<string, { description: string; category: string; 
   "25600": { description: "Treatment of Colles Fracture — Closed, w/o Manipulation", category: "Surgery", fee: 890 },
   "27759": { description: "Treatment of Tibial Shaft Fracture — Intramedullary Nail", category: "Surgery", fee: 5200 },
   "10061": { description: "Incision and Drainage, Complex Abscess or Carbuncle", category: "Surgery", fee: 310 },
+  // Radiology (additional)
+  "71250": { description: "CT Chest w/o Contrast", category: "Radiology", fee: 540 },
+  "71270": { description: "CT Chest w/ and w/o Contrast", category: "Radiology", fee: 720 },
+  "74177": { description: "CT Abdomen & Pelvis w/ Contrast", category: "Radiology", fee: 890 },
+  "74178": { description: "CT Abdomen & Pelvis w/o and w/ Contrast", category: "Radiology", fee: 980 },
+  "70551": { description: "MRI Brain w/o Contrast", category: "Radiology", fee: 980 },
+  "72141": { description: "MRI Cervical Spine w/o Contrast", category: "Radiology", fee: 840 },
+  "76700": { description: "Ultrasound, Abdomen — Complete", category: "Radiology", fee: 320 },
+  "76805": { description: "Ultrasound, Obstetric (2nd/3rd Trimester)", category: "Radiology", fee: 290 },
+  "77067": { description: "Screening Mammography, Bilateral", category: "Radiology", fee: 185 },
+  "78452": { description: "Myocardial Perfusion Imaging w/ Exercise Stress (SPECT)", category: "Radiology", fee: 1240 },
+  // Pulmonology
+  "94010": { description: "Spirometry — Expiratory Flow Measurements", category: "Pulmonology", fee: 78 },
+  "94060": { description: "Bronchodilation Responsiveness — Spirometry Before & After", category: "Pulmonology", fee: 124 },
+  "94375": { description: "Respiratory Flow-Volume Loop", category: "Pulmonology", fee: 95 },
+  "94620": { description: "Pulmonary Stress Test, Simple", category: "Pulmonology", fee: 198 },
+  "94640": { description: "Pressurized Inhalation Treatment (Nebulizer)", category: "Pulmonology", fee: 42 },
+  "94664": { description: "Aerosol or Vapor Inhalation — Initial Demonstration", category: "Pulmonology", fee: 38 },
+  "31500": { description: "Intubation, Endotracheal — Emergency Procedure", category: "Pulmonology", fee: 320 },
+  "32555": { description: "Thoracentesis w/ Imaging Guidance", category: "Pulmonology", fee: 780 },
+  "94002": { description: "Ventilation Management, Hospital Inpatient — Initial Day", category: "Pulmonology", fee: 480 },
+  // Occupational Therapy
+  "97165": { description: "Occupational Therapy Evaluation — Low Complexity", category: "Occupational Therapy", fee: 125 },
+  "97166": { description: "Occupational Therapy Evaluation — Moderate Complexity", category: "Occupational Therapy", fee: 170 },
+  "97167": { description: "Occupational Therapy Evaluation — High Complexity", category: "Occupational Therapy", fee: 215 },
+  "97168": { description: "Occupational Therapy Re-Evaluation", category: "Occupational Therapy", fee: 110 },
+  "97535": { description: "Self-Care / Home Management Training, 15 min", category: "Occupational Therapy", fee: 95 },
+  "97537": { description: "Community / Work Reintegration Training, 15 min", category: "Occupational Therapy", fee: 98 },
+  "97542": { description: "Wheelchair Management / Propulsion Training, 15 min", category: "Occupational Therapy", fee: 88 },
 };
 
 // ─── ICD-10 Reference Library ─────────────────────────────────────────────────
@@ -225,6 +254,28 @@ export const ICD10_CODES: Record<string, { description: string; category: string
   "Z48.89":   { description: "Encounter for Other Postprocedural Aftercare", category: "Preventive" },
   "Z48.810":  { description: "Encounter for Surgical Aftercare Following Surgery on Sense Organs", category: "Preventive" },
   "T81.40XA": { description: "Infection Following Procedure, Unspecified — Initial", category: "Injury" },
+  // Pulmonology — additional respiratory
+  "J43.9":   { description: "Emphysema, Unspecified", category: "Respiratory" },
+  "J45.21":  { description: "Mild Intermittent Asthma, Acute Exacerbation", category: "Respiratory" },
+  "J45.41":  { description: "Moderate Persistent Asthma, Uncomplicated", category: "Respiratory" },
+  "J45.51":  { description: "Severe Persistent Asthma, Uncomplicated", category: "Respiratory" },
+  "J84.10":  { description: "Pulmonary Fibrosis, Unspecified", category: "Respiratory" },
+  "G47.33":  { description: "Obstructive Sleep Apnea (Adult)", category: "Respiratory" },
+  "J93.11":  { description: "Primary Spontaneous Pneumothorax", category: "Respiratory" },
+  "J90":     { description: "Pleural Effusion, Not Elsewhere Classified", category: "Respiratory" },
+  "J47.1":   { description: "Bronchiectasis with Acute Exacerbation", category: "Respiratory" },
+  // Radiology indications
+  "Z12.31":  { description: "Encounter for Screening Mammogram", category: "Preventive" },
+  "R91.8":   { description: "Other Nonspecific Abnormal Lung Finding on Imaging", category: "Respiratory" },
+  "C34.10":  { description: "Malignant Neoplasm, Upper Lobe Bronchus/Lung, Unspecified", category: "Respiratory" },
+  "R19.00":  { description: "Intra-Abdominal/Pelvic Swelling or Mass, Unspecified", category: "Gastrointestinal" },
+  "R93.0":   { description: "Abnormal Findings on Diagnostic Imaging of Skull/Head", category: "Neurological" },
+  // Occupational Therapy / Rehabilitation
+  "R26.89":  { description: "Other Abnormalities of Gait and Mobility", category: "Musculoskeletal" },
+  "Z96.641": { description: "Presence of Right Artificial Knee Joint", category: "Musculoskeletal" },
+  "Z96.642": { description: "Presence of Left Artificial Knee Joint", category: "Musculoskeletal" },
+  "G81.10":  { description: "Spastic Hemiplegia, Unspecified Side", category: "Neurological" },
+  "G35":     { description: "Multiple Sclerosis", category: "Neurological" },
 };
 
 // ─── CPT ↔ ICD-10 compatibility map ──────────────────────────────────────────
@@ -286,13 +337,13 @@ export const COMPAT_RULES: CompatRule[] = [
     fix: () => "Use M16.11 (Primary Osteoarthritis, Right Hip) or M16.12 (Left Hip). Prior authorization is typically required with supporting imaging and clinical notes.",
     liveLabel: "Hip replacement requires a hip-specific osteoarthritis or pathology diagnosis",
   },
-  // Physical therapy with non-musculoskeletal
+  // Physical/Occupational therapy with non-musculoskeletal/neurological
   {
-    match: (cpt, _, __, icdCat) => ["97110","97140","97530","97012"].includes(cpt) && !["Musculoskeletal","Injury"].includes(icdCat),
+    match: (cpt, _, __, icdCat) => ["97110","97140","97530","97012","97165","97166","97167","97168","97535","97537","97542"].includes(cpt) && !["Musculoskeletal","Injury","Neurological"].includes(icdCat),
     severity: "warning",
-    message: (cpt, cptD, icd, icdD) => `CPT ${cpt} (${cptD}) with "${icdD}" (${icd}) may lack medical necessity documentation.`,
-    fix: () => "Therapeutic procedures are typically supported by musculoskeletal or injury diagnoses. Ensure clinical notes document a functional deficit. Consider adding a musculoskeletal diagnosis if one applies.",
-    liveLabel: "Physical therapy codes typically require a musculoskeletal or injury diagnosis",
+    message: (cpt, cptD, icd, icdD) => `CPT ${cpt} (${cptD}) with "${icdD}" (${icd}) may lack documented PT/OT medical necessity.`,
+    fix: () => "PT and OT codes require a musculoskeletal, injury, or neurological diagnosis supported by documented functional deficits. Use M54.5 (low back pain), S46.011A (rotator cuff tear), G81.10 (hemiplegia), or G35 (MS). Payers may request the treatment plan.",
+    liveLabel: "PT/OT codes require a musculoskeletal, injury, or neurological diagnosis",
   },
   // ECG with musculoskeletal
   {
@@ -422,6 +473,78 @@ export const COMPAT_RULES: CompatRule[] = [
     fix: () => "Replace the preventive diagnosis with the pathology that necessitated surgery (e.g., K81.0 for cholecystectomy, K35.80 for appendectomy, S72.001A for hip fracture fixation). Post-op aftercare should use Z48.89.",
     liveLabel: "Surgical procedure codes cannot be paired with preventive/wellness diagnoses",
   },
+  // Spirometry with non-respiratory
+  {
+    match: (cpt, _, __, icdCat) => ["94010","94060","94375","94620"].includes(cpt) && !["Respiratory","Emergency"].includes(icdCat),
+    severity: "warning",
+    message: (cpt, cptD, icd, icdD) => `CPT ${cpt} (${cptD}) with "${icdD}" (${icd}) may lack a documented pulmonary indication.`,
+    fix: () => "Pulmonary function tests require a respiratory diagnosis. Use J44.1 (COPD), J45.21 (Asthma, Acute Exacerbation), J43.9 (Emphysema), or J84.10 (Pulmonary Fibrosis). Document clinical symptoms and the specific spirometry indication in chart notes.",
+    liveLabel: "Pulmonary function tests require a documented respiratory diagnosis",
+  },
+  // CT Chest with non-thoracic diagnosis
+  {
+    match: (cpt, _, __, icdCat) => ["71250","71270"].includes(cpt) && !["Respiratory","Cardiovascular","Emergency","Injury"].includes(icdCat),
+    severity: "warning",
+    message: (_, __, icd, icdD) => `CT Chest with "${icdD}" (${icd}) may require additional documentation of thoracic clinical necessity.`,
+    fix: () => "CT Chest is typically indicated for thoracic conditions. Add a respiratory or cardiovascular primary diagnosis (e.g., J18.9 Pneumonia, J44.1 COPD, R91.8 Abnormal Lung Finding, C34.10 Lung Malignancy). Payers may require prior auth without a clear thoracic indication.",
+    liveLabel: "CT Chest typically requires a respiratory, cardiovascular, or thoracic diagnosis",
+  },
+  // CT Abdomen/Pelvis with non-abdominal diagnosis
+  {
+    match: (cpt, _, __, icdCat) => ["74177","74178"].includes(cpt) && !["Gastrointestinal","Genitourinary","Emergency","Injury"].includes(icdCat),
+    severity: "warning",
+    message: (_, __, icd, icdD) => `CT Abdomen/Pelvis with "${icdD}" (${icd}) may require additional documentation of abdominal/pelvic indication.`,
+    fix: () => "CT Abdomen/Pelvis requires an abdominal or pelvic clinical indication. Use R10.9 (Abdominal Pain), K81.0 (Cholecystitis), K37 (Appendicitis), or R19.00 (Abdominal Mass). Payers typically require prior authorization for CT without a supporting clinical diagnosis.",
+    liveLabel: "CT Abdomen/Pelvis typically requires an abdominal or pelvic diagnosis",
+  },
+  // MRI Brain with non-neurological
+  {
+    match: (cpt, _, __, icdCat) => ["70551","70553"].includes(cpt) && !["Neurological","Emergency","Injury"].includes(icdCat),
+    severity: "warning",
+    message: (_, __, icd, icdD) => `MRI Brain with "${icdD}" (${icd}) may lack a documented neurological indication.`,
+    fix: () => "Add a neurological primary diagnosis to support brain MRI (e.g., G43.909 Migraine, R51.9 Headache, R93.0 Abnormal Head Imaging Findings, G35 Multiple Sclerosis). Many payers require prior auth for brain MRI without a clear neurological indication.",
+    liveLabel: "Brain MRI typically requires a neurological primary diagnosis",
+  },
+  // Screening mammography with non-screening diagnosis
+  {
+    match: (cpt, icd) => cpt === "77067" && !["Z12.31","Z00.00","Z00.01"].includes(icd),
+    severity: "warning",
+    message: (_, __, icd, icdD) => `Screening mammography (77067) with "${icdD}" (${icd}) — verify this is a preventive screening encounter, not a diagnostic study.`,
+    fix: () => "Use Z12.31 (Encounter for Screening Mammogram) for preventive bilateral mammography. If the patient has a breast symptom, lump, or abnormal finding, bill diagnostic mammography (77065 or 77066) instead, with the appropriate clinical diagnosis code.",
+    liveLabel: "Screening mammography (77067) requires a screening or preventive diagnosis",
+  },
+  // Thoracentesis without pleural/respiratory
+  {
+    match: (cpt, _, __, icdCat) => cpt === "32555" && !["Respiratory","Emergency"].includes(icdCat),
+    severity: "error",
+    message: (_, __, icd, icdD) => `CPT 32555 (Thoracentesis) with "${icdD}" (${icd}) lacks a documented pleural or thoracic indication.`,
+    fix: () => "Thoracentesis requires a pleural or thoracic diagnosis: J90 (Pleural Effusion), J93.11 (Spontaneous Pneumothorax), or J18.9 (Pneumonia with effusion). Payers will deny without a supporting thoracic indication documented in chart notes.",
+    liveLabel: "Thoracentesis requires a pleural effusion or respiratory primary diagnosis",
+  },
+  // Inhalation treatment with non-respiratory
+  {
+    match: (cpt, _, __, icdCat) => ["94640","94664"].includes(cpt) && icdCat !== "Respiratory",
+    severity: "warning",
+    message: (cpt, cptD, icd, icdD) => `CPT ${cpt} (${cptD}) with "${icdD}" (${icd}) — inhalation treatments require a respiratory indication.`,
+    fix: () => "Nebulizer and inhalation treatments are indicated for respiratory conditions. Use J45.21 (Asthma, Acute Exacerbation), J44.1 (COPD Exacerbation), or J18.9 (Pneumonia) as the primary diagnosis. Payers expect a qualifying respiratory code.",
+    liveLabel: "Inhalation therapy requires a respiratory primary diagnosis",
+  },
+  // OT evaluation codes with non-qualifying diagnosis
+  {
+    match: (cpt, _, __, icdCat) => ["97165","97166","97167","97168","97535","97537","97542"].includes(cpt) && !["Musculoskeletal","Injury","Neurological"].includes(icdCat),
+    severity: "warning",
+    message: (cpt, cptD, icd, icdD) => `CPT ${cpt} (${cptD}) with "${icdD}" (${icd}) may lack documented OT medical necessity.`,
+    fix: () => "Occupational therapy codes require a functional deficit documented in the treatment plan. Use a musculoskeletal, injury, or neurological diagnosis (e.g., M54.5, S46.011A, G81.10, G35). Payers will request documentation of ADL limitations and treatment goals.",
+    liveLabel: "Occupational therapy codes require a musculoskeletal, injury, or neurological diagnosis",
+  },
+  // Ultrasound Abdomen with non-abdominal
+  {
+    match: (cpt, _, __, icdCat) => cpt === "76700" && !["Gastrointestinal","Genitourinary","Emergency","Cardiovascular"].includes(icdCat),
+    severity: "warning",
+    message: (_, __, icd, icdD) => `Abdominal ultrasound (76700) with "${icdD}" (${icd}) may lack a documented abdominal indication.`,
+    fix: () => "Abdominal ultrasound requires an abdominal or pelvic clinical indication. Common supporting diagnoses: R10.9 (Abdominal Pain), K81.0 (Cholecystitis), R19.00 (Abdominal Mass), K21.0 (GERD). Document the specific clinical reason the ultrasound was ordered.",
+    liveLabel: "Abdominal ultrasound typically requires an abdominal or pelvic indication",
+  },
 ];
 
 // ─── Specialty Configurations ─────────────────────────────────────────────────
@@ -514,24 +637,25 @@ export const SPECIALTY_CONFIGS: Record<string, SpecialtyConfig> = {
     cptCodes: ["90791","90834","90837","90847","99213","99214"],
     icd10Codes: ["F32.1","F33.0","F41.1","F43.10"],
   },
-  "physical-therapy": {
-    id: "physical-therapy",
-    label: "Physical Therapy",
+  "physical-occupational-therapy": {
+    id: "physical-occupational-therapy",
+    label: "Physical & Occupational Therapy",
     color: "teal",
-    description: "Therapeutic exercises, manual therapy, and traction — tied closely to musculoskeletal and injury diagnoses.",
+    description: "PT and OT rehabilitation — therapeutic exercise, manual therapy, ADL reintegration, and self-care training tied to musculoskeletal, injury, and neurological diagnoses.",
     checks: [
-      "Musculoskeletal or injury diagnosis required for all PT codes",
+      "Musculoskeletal, injury, or neurological diagnosis required for all PT/OT codes",
+      "OT evaluation complexity (97165–97167) must match documented ADL deficits",
       "Functional deficit must be documented in the treatment plan",
-      "Therapy necessity vs. diagnosis alignment verified",
-      "Correct 15-minute unit billing per CPT guidelines",
+      "Correct 15-minute unit billing per CPT guidelines — units must match chart time",
     ],
     commonDenials: [
-      "PT codes billed with non-musculoskeletal primary diagnosis",
-      "Missing or expired treatment plan on file",
-      "Exceeding payer-allowed units per visit or per episode",
+      "PT/OT codes billed with non-qualifying primary diagnosis",
+      "Missing or expired treatment plan or medical necessity certification",
+      "Exceeding payer-allowed units per visit or episode of care",
+      "OT and PT billed same-day without separate documentation of distinct goals",
     ],
-    cptCodes: ["97001","97110","97140","97530","97012"],
-    icd10Codes: ["M54.5","M54.2","M17.11","M25.511","M75.1","M62.81","S83.511A","S46.011A","G89.29","M54.16","M23.61"],
+    cptCodes: ["97001","97110","97140","97530","97012","97165","97166","97167","97168","97535","97537","97542"],
+    icd10Codes: ["M54.5","M54.2","M17.11","M25.511","M75.1","M62.81","S83.511A","S46.011A","G89.29","M54.16","M23.61","R26.89","G81.10","G35","Z96.641","Z96.642"],
   },
   "preventive-care": {
     id: "preventive-care",
@@ -571,6 +695,46 @@ export const SPECIALTY_CONFIGS: Record<string, SpecialtyConfig> = {
     ],
     cptCodes: ["99281","99282","99283","99284","99285","99203","99204","99213","99214","71046","93000","10060","10061"],
     icd10Codes: ["R07.9","R07.4","R06.00","R10.9","R10.0","R10.31","R50.9","E86.0","J06.9","J18.9","N39.0","S92.501A","S93.401A","S01.411A","S61.211A","R51.9","R00.0"],
+  },
+  "radiology": {
+    id: "radiology",
+    label: "Radiology",
+    color: "indigo",
+    description: "Diagnostic imaging — X-ray, CT, MRI, ultrasound, and nuclear medicine — each requiring a site-specific clinical indication and payer-specific prior auth compliance.",
+    checks: [
+      "Imaging site must match the primary diagnosis anatomical location",
+      "CT and MRI studies often require prior authorization — verify per payer plan",
+      "Contrast vs. non-contrast selection must match the clinical indication",
+      "Screening vs. diagnostic imaging codes differ — wrong choice triggers automatic denial",
+    ],
+    commonDenials: [
+      "MRI or CT without a supporting site-specific clinical indication or prior auth",
+      "Imaging site mismatch with primary diagnosis (e.g., knee MRI with back pain code)",
+      "Screening mammography (77067) billed with a symptom or diagnostic diagnosis",
+      "Duplicate imaging — same modality and site ordered within a short timeframe",
+    ],
+    cptCodes: ["71046","71250","71270","74177","74178","73721","72148","72141","70553","70551","73030","76700","76805","77067","78452"],
+    icd10Codes: ["M54.5","M54.16","J18.9","J44.1","R91.8","C34.10","M17.11","M23.61","I50.9","I48.91","G43.909","R51.9","R93.0","R19.00","Z12.31","R07.9","S72.001A"],
+  },
+  "pulmonology": {
+    id: "pulmonology",
+    label: "Pulmonology",
+    color: "sky",
+    description: "Respiratory diagnostics and treatment — pulmonary function tests, inhalation therapy, thoracentesis, and ventilation management with strict respiratory diagnosis requirements.",
+    checks: [
+      "Pulmonary function tests (94010, 94060) require a documented respiratory diagnosis",
+      "Inhalation treatments (94640, 94664) require a qualifying respiratory primary diagnosis",
+      "Thoracentesis (32555) must document pleural effusion or pneumothorax indication",
+      "Ventilation management (94002) requires inpatient setting documentation",
+    ],
+    commonDenials: [
+      "Spirometry billed without a respiratory indication documented in chart notes",
+      "Inhalation treatment without a qualifying exacerbation diagnosis (J45.21, J44.1)",
+      "Thoracentesis without documented pleural pathology (J90, J93.11)",
+      "Pulmonary stress test billed without documented clinical indication or prior auth",
+    ],
+    cptCodes: ["94010","94060","94375","94620","94640","94664","31500","32555","94002","71046","71250","71270","93000","99213","99214"],
+    icd10Codes: ["J44.1","J45.20","J45.21","J45.41","J45.51","J43.9","J84.10","G47.33","J93.11","J90","J47.1","J18.9","J20.9","J06.9","R06.00","R06.09","R91.8","C34.10"],
   },
   "or-surgical": {
     id: "or-surgical",

@@ -42,7 +42,6 @@ const CATEGORY_BADGE: Record<string, string> = {
   "Surgery": "bg-red-100 text-red-700",
   "Orthopedics": "bg-orange-100 text-orange-700",
   "Cardiology": "bg-pink-100 text-pink-700",
-  "Radiology": "bg-purple-100 text-purple-700",
   "Physical Therapy": "bg-teal-100 text-teal-700",
   "Laboratory": "bg-cyan-100 text-cyan-700",
   "Mental Health": "bg-violet-100 text-violet-700",
@@ -56,6 +55,9 @@ const CATEGORY_BADGE: Record<string, string> = {
   "Neurological": "bg-purple-100 text-purple-700",
   "Family History": "bg-slate-100 text-slate-600",
   "Emergency": "bg-red-100 text-red-700",
+  "Radiology": "bg-indigo-100 text-indigo-700",
+  "Pulmonology": "bg-sky-100 text-sky-700",
+  "Occupational Therapy": "bg-teal-100 text-teal-700",
 };
 
 // Color map for specialty accents
@@ -71,6 +73,8 @@ const SPECIALTY_COLORS: Record<string, {
   emerald: { dot: "bg-emerald-500", bg: "bg-emerald-50", border: "border-emerald-200",text: "text-emerald-700",heading: "text-emerald-900",badge: "bg-emerald-100",badgeText: "text-emerald-700",pillActive: "bg-emerald-600 text-white" },
   amber:   { dot: "bg-amber-500",   bg: "bg-amber-50",   border: "border-amber-200",  text: "text-amber-700",  heading: "text-amber-900",  badge: "bg-amber-100",  badgeText: "text-amber-700",  pillActive: "bg-amber-600 text-white"   },
   red:     { dot: "bg-red-500",     bg: "bg-red-50",     border: "border-red-200",    text: "text-red-700",    heading: "text-red-900",    badge: "bg-red-100",    badgeText: "text-red-700",    pillActive: "bg-red-600 text-white"     },
+  indigo:  { dot: "bg-indigo-500", bg: "bg-indigo-50", border: "border-indigo-200", text: "text-indigo-700", heading: "text-indigo-900", badge: "bg-indigo-100", badgeText: "text-indigo-700", pillActive: "bg-indigo-600 text-white"  },
+  sky:     { dot: "bg-sky-500",    bg: "bg-sky-50",    border: "border-sky-200",    text: "text-sky-700",    heading: "text-sky-900",    badge: "bg-sky-100",    badgeText: "text-sky-700",    pillActive: "bg-sky-600 text-white"     },
 };
 
 // ── Highlight helper ──────────────────────────────────────────────────────────
