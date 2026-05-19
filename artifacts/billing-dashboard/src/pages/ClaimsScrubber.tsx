@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { AlertTriangle, CheckCircle, Info, Loader2, Shield, ChevronRight, X, Sparkles, Zap, User } from "lucide-react";
+import { AlertTriangle, CheckCircle, Info, Loader2, Shield, ChevronRight, X, Sparkles, Zap, User, Lightbulb } from "lucide-react";
 import { scrubClaim, CPT_CODES, ICD10_CODES, type ScrubError } from "@/data/mockData";
 import type { Claim } from "@/data/mockData";
 
@@ -83,20 +83,30 @@ function FieldHint({ code, lookup }: { code: string; lookup: Record<string, { de
   );
 }
 
-function ErrorCard({ error }: { error: ScrubError }) {
-  const isError = error.severity === "error";
+function ScrubCard({ error }: { error: ScrubError }) {
+  const s = error.severity;
+  const styles = {
+    error:   { wrap: "bg-red-50 border-red-200",     icon: "text-red-500",   label: "text-red-800",   body: "text-red-700",   divider: "border-red-200",   tag: "Error" },
+    warning: { wrap: "bg-amber-50 border-amber-200", icon: "text-amber-500", label: "text-amber-800", body: "text-amber-700", divider: "border-amber-200", tag: "Warning" },
+    info:    { wrap: "bg-blue-50 border-blue-200",   icon: "text-blue-500",  label: "text-blue-800",  body: "text-blue-700",  divider: "border-blue-200",  tag: "Suggestion" },
+  }[s];
+
+  const Icon = s === "info" ? Lightbulb : AlertTriangle;
+  const fieldLabel = error.field.charAt(0).toUpperCase() + error.field.slice(1).replace(/([A-Z])/g, " $1");
+  const actionLabel = s === "info" ? "How to add" : "How to fix";
+
   return (
-    <div className={`rounded-xl border p-4 ${isError ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
+    <div className={`rounded-xl border p-4 ${styles.wrap}`}>
       <div className="flex items-start gap-3">
-        <AlertTriangle className={`w-5 h-5 mt-0.5 shrink-0 ${isError ? "text-red-500" : "text-amber-500"}`} />
+        <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${styles.icon}`} />
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-semibold ${isError ? "text-red-800" : "text-amber-800"}`}>
-            {isError ? "Error" : "Warning"} · {error.field.charAt(0).toUpperCase() + error.field.slice(1).replace(/([A-Z])/g, " $1")}
+          <p className={`text-sm font-semibold ${styles.label}`}>
+            {styles.tag} · {fieldLabel}
           </p>
-          <p className={`text-sm mt-1 ${isError ? "text-red-700" : "text-amber-700"}`}>{error.message}</p>
-          <div className={`mt-2 pt-2 border-t ${isError ? "border-red-200" : "border-amber-200"}`}>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">How to fix</p>
-            <p className={`text-xs ${isError ? "text-red-700" : "text-amber-700"}`}>{error.fix}</p>
+          <p className={`text-sm mt-1 ${styles.body}`}>{error.message}</p>
+          <div className={`mt-2 pt-2 border-t ${styles.divider}`}>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">{actionLabel}</p>
+            <p className={`text-xs ${styles.body}`}>{error.fix}</p>
           </div>
         </div>
       </div>
@@ -171,6 +181,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
 
   const errorFields = new Set(scrubResult?.filter(e => e.severity === "error").map(e => e.field) ?? []);
   const warnFields = new Set(scrubResult?.filter(e => e.severity === "warning").map(e => e.field) ?? []);
+  const infoFields = new Set(scrubResult?.filter(e => e.severity === "info").map(e => e.field) ?? []);
 
   function updateForm(patch: Partial<ClaimsFormData>) {
     setForm(f => ({ ...f, ...patch }));
@@ -204,6 +215,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
   function fieldClass(field: string) {
     if (errorFields.has(field)) return "border-red-400 bg-red-50 focus:ring-red-500 focus:border-red-400";
     if (warnFields.has(field)) return "border-amber-400 bg-amber-50 focus:ring-amber-500 focus:border-amber-400";
+    if (infoFields.has(field)) return "border-blue-300 bg-blue-50/40 focus:ring-blue-500 focus:border-blue-400";
     return "border-border bg-background focus:ring-primary focus:border-primary";
   }
 
@@ -242,8 +254,10 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
 
   const errors = scrubResult?.filter(e => e.severity === "error") ?? [];
   const warnings = scrubResult?.filter(e => e.severity === "warning") ?? [];
+  const infos = scrubResult?.filter(e => e.severity === "info") ?? [];
   const hasErrors = errors.length > 0;
-  const isClean = scrubResult !== null && errors.length === 0;
+  const hasWarnings = warnings.length > 0;
+  const isClean = scrubResult !== null && errors.length === 0 && warnings.length === 0;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -519,7 +533,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                   }`}
                 >
                   <ChevronRight className="w-4 h-4" />
-                  {hasErrors ? "Fix Errors First" : "Submit Claim"}
+                  {hasErrors ? "Fix Errors to Submit" : "Submit Claim"}
                 </button>
               )}
             </div>
@@ -527,7 +541,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
         </div>
 
         {/* ── Results panel ── */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-3">
           {scrubResult === null && !isScrubbing && (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <Shield className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
@@ -535,7 +549,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
               <p className="text-xs text-muted-foreground mt-1">
                 {liveCompat
                   ? 'Live check running. Click "Scrub Claim" for full validation.'
-                  : 'Enter a patient name and date of birth, then click "Scrub Claim".'}
+                  : 'Click "Scrub Claim" at any time — even with an empty form — to see step-by-step guidance.'}
               </p>
             </div>
           )}
@@ -545,46 +559,84 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
               <Loader2 className="w-8 h-8 text-primary mx-auto mb-3 animate-spin" />
               <p className="text-sm font-medium text-foreground">Analyzing claim…</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Checking CPT/ICD-10 compatibility, modifier requirements, and payer rules.
+                Checking fields, CPT/ICD-10 compatibility, and payer rules.
               </p>
             </div>
           )}
 
           {scrubResult !== null && !isScrubbing && (
             <>
-              <div className={`rounded-xl border p-4 flex items-center gap-3 ${
-                isClean ? "bg-emerald-50 border-emerald-200"
-                : hasErrors ? "bg-red-50 border-red-200"
-                : "bg-amber-50 border-amber-200"
+              {/* Summary banner */}
+              <div className={`rounded-xl border p-4 flex items-start gap-3 ${
+                isClean        ? "bg-emerald-50 border-emerald-200"
+                : hasErrors    ? "bg-red-50 border-red-200"
+                : hasWarnings  ? "bg-amber-50 border-amber-200"
+                : "bg-blue-50 border-blue-200"
               }`}>
                 {isClean
-                  ? <CheckCircle className="w-6 h-6 text-emerald-600 shrink-0" />
-                  : <AlertTriangle className="w-6 h-6 text-red-500 shrink-0" />}
+                  ? <CheckCircle className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
+                  : hasErrors
+                    ? <AlertTriangle className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+                    : hasWarnings
+                      ? <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
+                      : <Lightbulb className="w-6 h-6 text-blue-500 shrink-0 mt-0.5" />}
                 <div>
-                  <p className={`text-sm font-bold ${isClean ? "text-emerald-800" : hasErrors ? "text-red-800" : "text-amber-800"}`}>
-                    {isClean ? "Claim is Clean!" : hasErrors ? `${errors.length} Error${errors.length > 1 ? "s" : ""} Found` : `${warnings.length} Warning${warnings.length > 1 ? "s" : ""} Only`}
-                  </p>
-                  <p className={`text-xs ${isClean ? "text-emerald-700" : hasErrors ? "text-red-700" : "text-amber-700"}`}>
+                  <p className={`text-sm font-bold ${
+                    isClean ? "text-emerald-800"
+                    : hasErrors ? "text-red-800"
+                    : hasWarnings ? "text-amber-800"
+                    : "text-blue-800"
+                  }`}>
                     {isClean
-                      ? "No issues detected. This claim is ready to submit."
-                      : hasErrors ? "Fix all errors before submitting to avoid denial."
-                      : "No critical errors. Review warnings before submitting."}
+                      ? "Claim is Clean — ready to submit!"
+                      : hasErrors
+                        ? `${errors.length} error${errors.length > 1 ? "s" : ""} found${warnings.length > 0 ? `, ${warnings.length} warning${warnings.length > 1 ? "s" : ""}` : ""}${infos.length > 0 ? `, ${infos.length} suggestion${infos.length > 1 ? "s" : ""}` : ""}`
+                        : hasWarnings
+                          ? `${warnings.length} warning${warnings.length > 1 ? "s" : ""}${infos.length > 0 ? `, ${infos.length} suggestion${infos.length > 1 ? "s" : ""}` : ""} — no critical errors`
+                          : `${infos.length} suggestion${infos.length > 1 ? "s" : ""} — add more details for deeper checks`}
+                  </p>
+                  <p className={`text-xs mt-0.5 ${
+                    isClean ? "text-emerald-700"
+                    : hasErrors ? "text-red-700"
+                    : hasWarnings ? "text-amber-700"
+                    : "text-blue-700"
+                  }`}>
+                    {isClean
+                      ? "All provided fields validated. No billing conflicts detected."
+                      : hasErrors
+                        ? "Fix the red errors before submitting. Warnings and suggestions are optional but improve claim quality."
+                        : hasWarnings
+                          ? "No blocking errors. Review warnings, then submit when ready."
+                          : "Fill in more fields and scrub again to unlock additional checks."}
                   </p>
                 </div>
               </div>
 
-              {errors.map((e, i) => <ErrorCard key={i} error={e} />)}
-              {warnings.map((e, i) => <ErrorCard key={`w${i}`} error={e} />)}
+              {/* Errors first */}
+              {errors.map((e, i) => <ScrubCard key={`e${i}`} error={e} />)}
 
-              {isClean && (
+              {/* Warnings second */}
+              {warnings.length > 0 && errors.length > 0 && (
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-1">Warnings</p>
+              )}
+              {warnings.map((e, i) => <ScrubCard key={`w${i}`} error={e} />)}
+
+              {/* Info / suggestions last */}
+              {infos.length > 0 && (errors.length > 0 || warnings.length > 0) && (
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-1">Suggestions</p>
+              )}
+              {infos.map((e, i) => <ScrubCard key={`i${i}`} error={e} />)}
+
+              {/* Checks passed list when fully clean */}
+              {isClean && infos.length === 0 && (
                 <div className="bg-card border border-border rounded-xl p-4 space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Checks Passed</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">All Checks Passed</p>
                   {[
                     "Patient name validated",
                     "Date of birth confirmed",
                     ...(form.cpt ? ["CPT code recognized and active"] : []),
-                    ...(form.icd10 ? ["ICD-10 format correct", "Diagnosis supports procedure"] : []),
-                    "No modifier requirement detected",
+                    ...(form.icd10 ? ["ICD-10 format correct", "No CPT/diagnosis conflict detected"] : []),
+                    "No modifier requirement flagged",
                   ].map(c => (
                     <div key={c} className="flex items-center gap-2">
                       <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />

@@ -88,7 +88,7 @@ export const ICD10_CODES: Record<string, { description: string; category: string
 
 export interface ScrubError {
   field: string;
-  severity: "error" | "warning";
+  severity: "error" | "warning" | "info";
   message: string;
   fix: string;
 }
@@ -104,33 +104,37 @@ export function scrubClaim(claim: {
 
   // Patient name
   if (!claim.patient.trim()) {
-    errors.push({ field: "patient", severity: "error", message: "Patient name is required.", fix: "Enter the patient's full legal name as it appears on their insurance card." });
+    errors.push({ field: "patient", severity: "error", message: "Missing patient name.", fix: "Enter the patient's full legal name as it appears on their insurance card. This is needed to identify the claim." });
   }
 
   // DOB
   if (!claim.dob) {
-    errors.push({ field: "dob", severity: "error", message: "Date of birth is required.", fix: "Enter the patient's date of birth." });
+    errors.push({ field: "dob", severity: "error", message: "Missing date of birth.", fix: "Enter the patient's date of birth. Payers use this to match the claim to the correct member record." });
   }
 
-  // Insurance ID — recommended but not required
-  if (claim.insuranceId.trim() && !/^[A-Z]{2,4}-\d{6,}$/.test(claim.insuranceId.trim())) {
+  // Insurance ID — info if missing, warning if malformed
+  if (!claim.insuranceId.trim()) {
+    errors.push({ field: "insuranceId", severity: "info", message: "No insurance member ID entered.", fix: "Adding the member ID enables payer-specific eligibility checks and speeds up adjudication. Format is usually 2–4 letters, a hyphen, then 6+ digits (e.g., BCB-4821039)." });
+  } else if (!/^[A-Z]{2,4}-\d{6,}$/.test(claim.insuranceId.trim())) {
     errors.push({ field: "insuranceId", severity: "warning", message: "Insurance ID format looks unusual (expected: XXX-0000000).", fix: "Verify the member ID with the insurance card. Common formats include a 2-4 letter prefix followed by a hyphen and 6+ digits (e.g., BCB-4821039)." });
   }
 
-  // CPT — optional; only validate if provided
+  // CPT — info if missing, warning if unrecognised
   const cptCode = claim.cpt.trim();
-  if (cptCode && !CPT_CODES[cptCode]) {
+  if (!cptCode) {
+    errors.push({ field: "cpt", severity: "info", message: "No CPT procedure code entered.", fix: "Add a 5-digit CPT code to check procedure-specific billing rules and CPT/ICD-10 compatibility. Example: 99213 (office visit, established patient)." });
+  } else if (!CPT_CODES[cptCode]) {
     errors.push({ field: "cpt", severity: "warning", message: `CPT ${cptCode} is not in our reference list — verify it is valid and active.`, fix: "Check the AMA CPT code book or your billing software to confirm this code is active and billable for the current year." });
   }
 
-  // ICD-10 — optional; only validate if provided
+  // ICD-10 — info if missing, warning/error if malformed
   const icd = claim.icd10.trim().toUpperCase();
-  if (icd) {
-    if (!/^[A-Z]\d{2}(\.\w+)?$/.test(icd)) {
-      errors.push({ field: "icd10", severity: "warning", message: `"${icd}" is not a valid ICD-10 format. Codes should include a decimal (e.g., M54.5, not M545).`, fix: "ICD-10-CM codes follow the pattern: one letter + two digits + optional decimal + up to 4 characters. Check your EHR or an ICD-10 lookup tool." });
-    } else if (!ICD10_CODES[icd]) {
-      errors.push({ field: "icd10", severity: "warning", message: `ICD-10 ${icd} is not in our common code reference — verify it is billable.`, fix: "Confirm the diagnosis code is as specific as possible and is covered by the payer for this service." });
-    }
+  if (!icd) {
+    errors.push({ field: "icd10", severity: "info", message: "No ICD-10 diagnosis code entered.", fix: "Add a diagnosis code to validate medical necessity and check CPT/ICD-10 compatibility. Example: M54.5 (low back pain), Z00.00 (annual wellness exam)." });
+  } else if (!/^[A-Z]\d{2}(\.\w+)?$/.test(icd)) {
+    errors.push({ field: "icd10", severity: "warning", message: `"${icd}" is not a valid ICD-10 format. Codes should include a decimal (e.g., M54.5, not M545).`, fix: "ICD-10-CM codes follow the pattern: one letter + two digits + optional decimal + up to 4 characters. Check your EHR or an ICD-10 lookup tool." });
+  } else if (!ICD10_CODES[icd]) {
+    errors.push({ field: "icd10", severity: "warning", message: `ICD-10 ${icd} is not in our common code reference — verify it is billable.`, fix: "Confirm the diagnosis code is as specific as possible and is covered by the payer for this service." });
   }
 
   // Clinical compatibility rules (only run if both CPT and ICD-10 are present and recognized)
