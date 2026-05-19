@@ -36,9 +36,9 @@ function App() {
           {/* Sidebar */}
           <aside className="w-64 flex flex-col bg-sidebar text-sidebar-foreground shrink-0 border-r border-sidebar-border">
             {/* Logo */}
-            <div className="px-4 py-4 border-b border-sidebar-border">
-              <div className="bg-white rounded-xl px-3 py-2">
-                <img src={logoUrl} alt="ClaimFlow" className="h-8 w-auto" />
+            <div className="px-4 py-4 border-b border-sidebar-border flex items-center">
+              <div className="bg-white rounded-xl px-3 py-2 inline-flex items-center shrink-0">
+                <img src={logoUrl} alt="ClaimFlow" className="h-10 w-auto object-contain" />
               </div>
             </div>
 
