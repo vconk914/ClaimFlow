@@ -1,8 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import {
   AlertTriangle, CheckCircle, Loader2, Shield, ChevronRight, X,
-  Sparkles, Zap, User, Lightbulb, ChevronDown, BookOpen,
+  Sparkles, Zap, User, Lightbulb, ChevronDown, BookOpen, MapPin,
 } from "lucide-react";
+import { useRegion } from "@/context/RegionalContext";
 import {
   scrubClaim, CPT_CODES, ICD10_CODES, COMPAT_RULES, SPECIALTY_CONFIGS,
   type ScrubError, type SpecialtyConfig,
@@ -15,7 +16,7 @@ interface ClaimsFormData {
 
 interface Props { onSubmit: (claim: Claim) => void; }
 
-const PAYERS = ["BlueCross", "Medicare", "Medicaid", "Aetna", "UnitedHealth", "Humana", "Cigna", "Other"];
+const FALLBACK_PAYERS = ["BlueCross", "Medicare", "Medicaid", "Aetna", "UnitedHealth", "Humana", "Cigna", "Other"];
 
 const EXAMPLES: { label: string; cpt: string; icd10: string; tag: "error" | "ok" }[] = [
   { label: "Fracture + E&M mismatch", cpt: "99213", icd10: "S92.501A", tag: "error" },
@@ -363,8 +364,12 @@ function useLiveCompat(cpt: string, icd10: string) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ClaimsScrubber({ onSubmit }: Props) {
+  const { config, stateId } = useRegion();
+  const regionalPayers = config.payers.map(p => p.name);
+  const payerList = regionalPayers.length > 0 ? [...regionalPayers, "Other"] : FALLBACK_PAYERS;
+
   const [form, setForm] = useState<ClaimsFormData>({ patient: "", dob: "", insuranceId: "", cpt: "", icd10: "" });
-  const [payer, setPayer] = useState("BlueCross");
+  const [payer, setPayer] = useState(payerList[0]);
   const [amount, setAmount] = useState("");
   const [scrubResult, setScrubResult] = useState<ScrubError[] | null>(null);
   const [isScrubbing, setIsScrubbing] = useState(false);
@@ -605,12 +610,15 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                   onChange={e => updateForm({ insuranceId: e.target.value })} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
+                <label className="block text-sm font-medium text-foreground mb-1.5 flex items-center gap-1.5">
                   Payer <span className="text-xs text-muted-foreground font-normal">(optional)</span>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded ml-auto">
+                    <MapPin className="w-2.5 h-2.5" />{config.abbreviation}
+                  </span>
                 </label>
                 <select className={`${inputBase} border-border bg-background`}
                   value={payer} onChange={e => setPayer(e.target.value)}>
-                  {PAYERS.map(p => <option key={p}>{p}</option>)}
+                  {payerList.map(p => <option key={p}>{p}</option>)}
                 </select>
               </div>
             </div>

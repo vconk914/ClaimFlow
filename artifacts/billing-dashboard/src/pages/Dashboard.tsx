@@ -1,9 +1,11 @@
-import { TrendingUp, TrendingDown, FileCheck, Clock, DollarSign, AlertTriangle, ArrowUpRight } from "lucide-react";
+import { TrendingUp, TrendingDown, FileCheck, Clock, DollarSign, AlertTriangle, ArrowUpRight, MapPin, Building2, ShieldAlert } from "lucide-react";
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Area, AreaChart,
 } from "recharts";
 import { DENIAL_REASONS, PAYER_DATA, MONTHLY_TREND } from "@/data/mockData";
+import { useRegion } from "@/context/RegionalContext";
+import type { StateId } from "@/data/regionalData";
 
 const RADIAN = Math.PI / 180;
 
@@ -60,7 +62,21 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
+const STATE_ACCENT: Record<StateId, { dot: string; text: string; bg: string; border: string }> = {
+  national: { dot: "bg-blue-500",   text: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200"   },
+  ny:       { dot: "bg-indigo-500", text: "text-indigo-700", bg: "bg-indigo-50", border: "border-indigo-200" },
+  fl:       { dot: "bg-orange-500", text: "text-orange-700", bg: "bg-orange-50", border: "border-orange-200" },
+  ca:       { dot: "bg-amber-500",  text: "text-amber-700",  bg: "bg-amber-50",  border: "border-amber-200"  },
+  tx:       { dot: "bg-red-500",    text: "text-red-700",    bg: "bg-red-50",    border: "border-red-200"    },
+};
+
 export default function Dashboard() {
+  const { stateId, config } = useRegion();
+  const accent = STATE_ACCENT[stateId];
+  const topPayers = config.payers.slice(0, 4);
+  const statePattern = config.denialPatterns.find(d => d.stateSpecific);
+  const hasNoFault = config.noFault.applicable;
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -113,6 +129,53 @@ export default function Dashboard() {
           trendLabel="-$3,240 vs last month"
           color="bg-amber-500"
         />
+      </div>
+
+      {/* ── Regional Intelligence Panel ── */}
+      <div className={`rounded-xl border ${accent.border} ${accent.bg} p-4`}>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`w-7 h-7 rounded-lg ${accent.dot} flex items-center justify-center shrink-0`}>
+              <MapPin className="w-3.5 h-3.5 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-semibold ${accent.text}`}>Regional Intelligence</span>
+                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${accent.bg} ${accent.text} border ${accent.border}`}>{config.abbreviation}</span>
+                <span className="text-xs text-muted-foreground">{config.label} billing rules active</span>
+              </div>
+              {statePattern && (
+                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                  <ShieldAlert className="w-3 h-3 text-amber-500 shrink-0" />
+                  <span className="font-medium text-amber-700">Top state-specific denial:</span>
+                  <span>{statePattern.category} ({statePattern.percentage}%) — {statePattern.description}</span>
+                </p>
+              )}
+            </div>
+          </div>
+          {hasNoFault && (
+            <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium px-2.5 py-1 rounded-lg shrink-0">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              No-Fault / PIP Rules Active · {config.noFault.billingDeadlineDays}-day billing window
+            </div>
+          )}
+        </div>
+
+        {/* Top 4 payers */}
+        <div className="mt-4 grid grid-cols-4 gap-3">
+          {topPayers.map(p => (
+            <div key={p.name} className="bg-card border border-border rounded-lg px-3 py-2.5 space-y-1.5">
+              <div className="flex items-center justify-between gap-1">
+                <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <span className={`text-xs font-medium ${p.denialRate >= 18 ? "text-red-600" : p.denialRate >= 12 ? "text-amber-600" : "text-emerald-600"}`}>
+                  {p.denialRate}% denial
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-foreground leading-tight line-clamp-2">{p.name}</p>
+              <p className="text-xs text-muted-foreground">{p.avgDaysToPayment}d avg payment</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Charts row */}
