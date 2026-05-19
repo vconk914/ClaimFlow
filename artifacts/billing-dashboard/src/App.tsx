@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { LayoutDashboard, Stethoscope, BarChart3, Building2, Bell, Settings, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Stethoscope, BarChart3, Bell, Settings, ChevronRight } from "lucide-react";
+import logoUrl from "/logo.png";
 import Dashboard from "@/pages/Dashboard";
 import ClaimsScrubber from "@/pages/ClaimsScrubber";
 import Analytics from "@/pages/Analytics";
@@ -35,15 +36,9 @@ function App() {
           {/* Sidebar */}
           <aside className="w-64 flex flex-col bg-sidebar text-sidebar-foreground shrink-0 border-r border-sidebar-border">
             {/* Logo */}
-            <div className="px-5 py-5 border-b border-sidebar-border">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center shrink-0">
-                  <Building2 className="w-4.5 h-4.5 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold leading-tight">ClaimFlow</p>
-                  <p className="text-xs text-sidebar-foreground/60 leading-tight">Medical Billing</p>
-                </div>
+            <div className="px-4 py-4 border-b border-sidebar-border">
+              <div className="bg-white rounded-xl px-3 py-2">
+                <img src={logoUrl} alt="ClaimFlow" className="h-8 w-auto" />
               </div>
             </div>
 
