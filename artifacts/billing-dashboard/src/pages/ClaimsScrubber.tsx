@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { AlertTriangle, CheckCircle, Info, Loader2, Shield, ChevronRight, X, Sparkles } from "lucide-react";
+import { useState, useMemo } from "react";
+import { AlertTriangle, CheckCircle, Info, Loader2, Shield, ChevronRight, X, Sparkles, Zap } from "lucide-react";
 import { scrubClaim, CPT_CODES, ICD10_CODES, type ScrubError } from "@/data/mockData";
 import type { Claim } from "@/data/mockData";
 
@@ -17,6 +17,13 @@ interface Props {
 
 const PAYERS = ["BlueCross", "Medicare", "Medicaid", "Aetna", "UnitedHealth", "Humana", "Cigna", "Other"];
 
+const EXAMPLES = [
+  { label: "Fracture + E&M mismatch", cpt: "99213", icd10: "S92.501A", tag: "error" },
+  { label: "Arthroscopy + URI mismatch", cpt: "29881", icd10: "J06.9", tag: "error" },
+  { label: "Wellness + E&M mismatch", cpt: "99213", icd10: "Z00.00", tag: "error" },
+  { label: "Clean claim", cpt: "99213", icd10: "M54.5", tag: "ok" },
+] as const;
+
 function FieldHint({ code, lookup }: { code: string; lookup: Record<string, { description: string }> }) {
   const info = lookup[code.trim().toUpperCase()] || lookup[code.trim()];
   if (!info || !code.trim()) return null;
@@ -29,26 +36,51 @@ function FieldHint({ code, lookup }: { code: string; lookup: Record<string, { de
 }
 
 function ErrorCard({ error }: { error: ScrubError }) {
+  const isError = error.severity === "error";
   return (
-    <div className={`rounded-xl border p-4 ${error.severity === "error"
-      ? "bg-red-50 border-red-200"
-      : "bg-amber-50 border-amber-200"
-    }`}>
+    <div className={`rounded-xl border p-4 ${isError ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
       <div className="flex items-start gap-3">
-        <AlertTriangle className={`w-5 h-5 mt-0.5 shrink-0 ${error.severity === "error" ? "text-red-500" : "text-amber-500"}`} />
+        <AlertTriangle className={`w-5 h-5 mt-0.5 shrink-0 ${isError ? "text-red-500" : "text-amber-500"}`} />
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-semibold ${error.severity === "error" ? "text-red-800" : "text-amber-800"}`}>
-            {error.severity === "error" ? "Error" : "Warning"} · {error.field.charAt(0).toUpperCase() + error.field.slice(1).replace(/([A-Z])/g, " $1")}
+          <p className={`text-sm font-semibold ${isError ? "text-red-800" : "text-amber-800"}`}>
+            {isError ? "Error" : "Warning"} · {error.field.charAt(0).toUpperCase() + error.field.slice(1).replace(/([A-Z])/g, " $1")}
           </p>
-          <p className={`text-sm mt-1 ${error.severity === "error" ? "text-red-700" : "text-amber-700"}`}>{error.message}</p>
-          <div className={`mt-2 pt-2 border-t ${error.severity === "error" ? "border-red-200" : "border-amber-200"}`}>
+          <p className={`text-sm mt-1 ${isError ? "text-red-700" : "text-amber-700"}`}>{error.message}</p>
+          <div className={`mt-2 pt-2 border-t ${isError ? "border-red-200" : "border-amber-200"}`}>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">How to fix</p>
-            <p className={`text-xs ${error.severity === "error" ? "text-red-700" : "text-amber-700"}`}>{error.fix}</p>
+            <p className={`text-xs ${isError ? "text-red-700" : "text-amber-700"}`}>{error.fix}</p>
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+// Quick live compatibility check — runs as user types, no full validation
+function useLiveCompat(cpt: string, icd10: string) {
+  return useMemo(() => {
+    const c = cpt.trim();
+    const icd = icd10.trim().toUpperCase();
+    if (c.length < 5 || !icd || !/^[A-Z]\d{2}(\.\w+)?$/.test(icd)) return null;
+    const cptInfo = CPT_CODES[c];
+    const icdInfo = ICD10_CODES[icd];
+    if (!cptInfo || !icdInfo) return null;
+
+    const issues: string[] = [];
+
+    if (["99213", "99214", "99203"].includes(c) && icd === "S92.501A")
+      issues.push("E&M visit code cannot be the procedure code for a fracture");
+    if (c === "29881" && !["M17.11", "M23.61"].includes(icd))
+      issues.push("Arthroscopy requires a knee-specific joint diagnosis");
+    if (["99213", "99214", "99203"].includes(c) && icd === "Z00.00")
+      issues.push("Wellness exam diagnosis needs a preventive medicine CPT (99395–99397)");
+    if (c === "93000" && icdInfo.category === "Musculoskeletal")
+      issues.push("ECG medical necessity may be questioned with a musculoskeletal diagnosis");
+    if (c === "97110" && !["Musculoskeletal", "Injury"].includes(icdInfo.category))
+      issues.push("Therapeutic exercise typically needs a musculoskeletal diagnosis");
+
+    return { cptDesc: cptInfo.description, icdDesc: icdInfo.description, issues };
+  }, [cpt, icd10]);
 }
 
 export default function ClaimsScrubber({ onSubmit }: Props) {
@@ -58,11 +90,20 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
   const [payer, setPayer] = useState("BlueCross");
   const [amount, setAmount] = useState("");
   const [scrubResult, setScrubResult] = useState<ScrubError[] | null>(null);
-  const [isScubbing, setIsScrubbing] = useState(false);
+  const [isScrubbing, setIsScrubbing] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  const liveCompat = useLiveCompat(form.cpt, form.icd10);
 
   const errorFields = new Set(scrubResult?.filter(e => e.severity === "error").map(e => e.field) ?? []);
   const warnFields = new Set(scrubResult?.filter(e => e.severity === "warning").map(e => e.field) ?? []);
+
+  // Update form and clear stale scrub results when user edits
+  function updateForm(patch: Partial<ClaimsFormData>) {
+    setForm(f => ({ ...f, ...patch }));
+    setScrubResult(null);
+    setSubmitted(false);
+  }
 
   function fieldClass(field: string) {
     if (errorFields.has(field)) return "border-red-400 bg-red-50 focus:ring-red-500 focus:border-red-400";
@@ -76,15 +117,14 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
     setIsScrubbing(true);
     setScrubResult(null);
     setSubmitted(false);
-    await new Promise(r => setTimeout(r, 800)); // simulate processing
+    await new Promise(r => setTimeout(r, 700));
     const errors = scrubClaim(form);
     setScrubResult(errors);
     setIsScrubbing(false);
   }
 
   function handleSubmit() {
-    const hasErrors = scrubResult?.some(e => e.severity === "error");
-    if (hasErrors) return;
+    if (scrubResult?.some(e => e.severity === "error")) return;
     const newClaim: Claim = {
       id: `CLM-2024-${String(Math.floor(Math.random() * 900) + 100).padStart(3, "0")}`,
       patient: form.patient,
@@ -111,10 +151,11 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Claims Scrubber</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Enter claim details and scrub for errors before submission to avoid rejections.</p>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          Enter claim details and scrub for errors before submission to avoid rejections.
+        </p>
       </div>
 
       {/* Success banner */}
@@ -123,7 +164,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
           <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
           <div>
             <p className="text-sm font-semibold text-emerald-800">Claim Submitted Successfully</p>
-            <p className="text-xs text-emerald-700">Your clean claim has been queued for processing and will appear in the Analytics tab.</p>
+            <p className="text-xs text-emerald-700">Your clean claim is queued as Pending and appears in the Analytics tab.</p>
           </div>
           <button onClick={() => setSubmitted(false)} className="ml-auto text-emerald-500 hover:text-emerald-700">
             <X className="w-4 h-4" />
@@ -132,12 +173,13 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Claim Form */}
+        {/* ── Claim Form ── */}
         <div className="lg:col-span-3 bg-card border border-border rounded-xl shadow-sm">
           <div className="px-6 py-4 border-b border-border">
             <h2 className="text-base font-semibold text-foreground">Claim Information</h2>
             <p className="text-xs text-muted-foreground mt-0.5">All fields are required for scrubbing</p>
           </div>
+
           <div className="p-6 space-y-5">
             {/* Patient name */}
             <div>
@@ -146,7 +188,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                 className={`${inputBase} ${fieldClass("patient")}`}
                 placeholder="e.g., Margaret E. Thornton"
                 value={form.patient}
-                onChange={e => setForm(f => ({ ...f, patient: e.target.value }))}
+                onChange={e => updateForm({ patient: e.target.value })}
               />
               {errorFields.has("patient") && <p className="text-xs text-red-600 mt-1">Required</p>}
             </div>
@@ -159,7 +201,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                   type="date"
                   className={`${inputBase} ${fieldClass("dob")}`}
                   value={form.dob}
-                  onChange={e => setForm(f => ({ ...f, dob: e.target.value }))}
+                  onChange={e => updateForm({ dob: e.target.value })}
                 />
               </div>
               <div>
@@ -168,7 +210,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                   className={`${inputBase} ${fieldClass("insuranceId")}`}
                   placeholder="e.g., BCB-4821039"
                   value={form.insuranceId}
-                  onChange={e => setForm(f => ({ ...f, insuranceId: e.target.value }))}
+                  onChange={e => updateForm({ insuranceId: e.target.value })}
                 />
               </div>
             </div>
@@ -206,13 +248,10 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                 className={`${inputBase} ${fieldClass("cpt")} font-mono`}
                 placeholder="e.g., 99213"
                 value={form.cpt}
-                onChange={e => setForm(f => ({ ...f, cpt: e.target.value.replace(/\D/g, "").slice(0, 5) }))}
+                onChange={e => updateForm({ cpt: e.target.value.replace(/\D/g, "").slice(0, 5) })}
                 maxLength={5}
               />
               <FieldHint code={form.cpt} lookup={CPT_CODES} />
-              {errorFields.has("cpt") && (
-                <p className="text-xs text-red-600 mt-1">Invalid or missing CPT code</p>
-              )}
             </div>
 
             {/* ICD-10 Code */}
@@ -220,33 +259,61 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
               <label className="block text-sm font-medium text-foreground mb-1.5">ICD-10 Diagnosis Code</label>
               <input
                 className={`${inputBase} ${fieldClass("icd10")} font-mono`}
-                placeholder="e.g., M54.5 or S92.501A"
+                placeholder="e.g., M54.5 or Z00.00"
                 value={form.icd10}
-                onChange={e => setForm(f => ({ ...f, icd10: e.target.value }))}
+                onChange={e => updateForm({ icd10: e.target.value })}
               />
               <FieldHint code={form.icd10.toUpperCase()} lookup={ICD10_CODES} />
-              {errorFields.has("icd10") && (
-                <p className="text-xs text-red-600 mt-1">Invalid or missing ICD-10 code</p>
-              )}
             </div>
 
-            {/* Try this example */}
+            {/* ── Live compatibility indicator ── */}
+            {liveCompat && (
+              <div className={`rounded-lg border p-3 text-xs transition-all ${
+                liveCompat.issues.length > 0
+                  ? "bg-red-50 border-red-200"
+                  : "bg-emerald-50 border-emerald-200"
+              }`}>
+                <div className="flex items-center gap-1.5 font-semibold mb-1.5">
+                  <Zap className={`w-3.5 h-3.5 ${liveCompat.issues.length > 0 ? "text-red-500" : "text-emerald-600"}`} />
+                  <span className={liveCompat.issues.length > 0 ? "text-red-800" : "text-emerald-800"}>
+                    Live check: {liveCompat.issues.length > 0 ? `${liveCompat.issues.length} issue${liveCompat.issues.length > 1 ? "s" : ""} detected` : "CPT + ICD-10 look compatible"}
+                  </span>
+                </div>
+                <p className="text-muted-foreground mb-1">
+                  <span className="font-mono">{form.cpt}</span> {liveCompat.cptDesc} &nbsp;/&nbsp; <span className="font-mono">{form.icd10.toUpperCase()}</span> {liveCompat.icdDesc}
+                </p>
+                {liveCompat.issues.map((issue, i) => (
+                  <p key={i} className="text-red-700 flex items-start gap-1 mt-0.5">
+                    <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
+                    {issue}
+                  </p>
+                ))}
+                {liveCompat.issues.length === 0 && (
+                  <p className="text-emerald-700">No known coding conflicts. Click Scrub Claim for a full validation.</p>
+                )}
+              </div>
+            )}
+
+            {/* Example mismatches */}
             <div className="rounded-lg bg-muted border border-border p-3">
-              <p className="text-xs font-medium text-muted-foreground mb-2">Try a known mismatch:</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Try a known scenario:</p>
               <div className="flex flex-wrap gap-2">
-                {[
-                  { label: "Fracture mismatch", cpt: "99213", icd10: "S92.501A" },
-                  { label: "Arthroscopy mismatch", cpt: "29881", icd10: "J06.9" },
-                  { label: "Clean claim", cpt: "99213", icd10: "J06.9" },
-                ].map(ex => (
+                {EXAMPLES.map(ex => (
                   <button
                     key={ex.label}
                     onClick={() => {
-                      setForm(f => ({ ...f, cpt: ex.cpt, icd10: ex.icd10 }));
-                      setScrubResult(null);
+                      updateForm({ cpt: ex.cpt, icd10: ex.icd10 });
                     }}
-                    className="text-xs bg-card border border-border hover:bg-secondary rounded-md px-2.5 py-1.5 text-foreground transition-colors"
+                    className={`text-xs border rounded-md px-2.5 py-1.5 transition-colors flex items-center gap-1.5 ${
+                      ex.tag === "error"
+                        ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                        : "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                    }`}
                   >
+                    {ex.tag === "error"
+                      ? <AlertTriangle className="w-3 h-3" />
+                      : <CheckCircle className="w-3 h-3" />
+                    }
                     {ex.label}
                   </button>
                 ))}
@@ -257,14 +324,13 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
             <div className="flex gap-3 pt-1">
               <button
                 onClick={handleScrub}
-                disabled={isScubbing}
+                disabled={isScrubbing}
                 className="flex-1 flex items-center justify-center gap-2 bg-foreground text-background hover:opacity-90 disabled:opacity-50 rounded-xl py-3 text-sm font-semibold transition-all"
               >
-                {isScubbing ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Scrubbing…</>
-                ) : (
-                  <><Sparkles className="w-4 h-4" /> Scrub Claim</>
-                )}
+                {isScrubbing
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Scrubbing…</>
+                  : <><Sparkles className="w-4 h-4" /> Scrub Claim</>
+                }
               </button>
 
               {scrubResult !== null && (
@@ -285,25 +351,32 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
           </div>
         </div>
 
-        {/* Scrub Results Panel */}
+        {/* ── Results panel ── */}
         <div className="lg:col-span-2 space-y-4">
-          {scrubResult === null && !isScubbing && (
+          {scrubResult === null && !isScrubbing && (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <Shield className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
               <p className="text-sm font-medium text-foreground">Scrub Results</p>
-              <p className="text-xs text-muted-foreground mt-1">Fill out the claim form and click "Scrub Claim" to check for errors before submission.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {liveCompat
+                  ? 'Live check running. Click "Scrub Claim" for full validation including demographics.'
+                  : 'Fill out the claim form and click "Scrub Claim" to check for errors before submission.'
+                }
+              </p>
             </div>
           )}
 
-          {isScubbing && (
+          {isScrubbing && (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <Loader2 className="w-8 h-8 text-primary mx-auto mb-3 animate-spin" />
               <p className="text-sm font-medium text-foreground">Analyzing claim…</p>
-              <p className="text-xs text-muted-foreground mt-1">Checking CPT/ICD-10 compatibility, modifier requirements, and payer rules.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Checking CPT/ICD-10 compatibility, modifier requirements, and payer rules.
+              </p>
             </div>
           )}
 
-          {scrubResult !== null && !isScubbing && (
+          {scrubResult !== null && !isScrubbing && (
             <>
               {/* Summary badge */}
               <div className={`rounded-xl border p-4 flex items-center gap-3 ${
@@ -319,7 +392,11 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                 }
                 <div>
                   <p className={`text-sm font-bold ${isClean ? "text-emerald-800" : hasErrors ? "text-red-800" : "text-amber-800"}`}>
-                    {isClean ? "Claim is Clean!" : hasErrors ? `${errors.length} Error${errors.length > 1 ? "s" : ""} Found` : `${warnings.length} Warning${warnings.length > 1 ? "s" : ""} Only`}
+                    {isClean
+                      ? "Claim is Clean!"
+                      : hasErrors
+                      ? `${errors.length} Error${errors.length > 1 ? "s" : ""} Found`
+                      : `${warnings.length} Warning${warnings.length > 1 ? "s" : ""} Only`}
                   </p>
                   <p className={`text-xs ${isClean ? "text-emerald-700" : hasErrors ? "text-red-700" : "text-amber-700"}`}>
                     {isClean
@@ -331,7 +408,6 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                 </div>
               </div>
 
-              {/* Error cards */}
               {errors.map((e, i) => <ErrorCard key={i} error={e} />)}
               {warnings.map((e, i) => <ErrorCard key={`w${i}`} error={e} />)}
 

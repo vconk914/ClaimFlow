@@ -191,6 +191,26 @@ export function scrubClaim(claim: {
         fix: "Family history codes (Z80–Z84) must be secondary diagnoses. Add the primary condition being treated as the first diagnosis code and move this code to a secondary position.",
       });
     }
+
+    // Rule: E&M office visit billed with annual wellness / preventive diagnosis
+    if (["99213", "99214", "99203"].includes(cptCode) && icd === "Z00.00") {
+      errors.push({
+        field: "icd10",
+        severity: "error",
+        message: `CPT ${cptCode} (${cptInfo.description}) cannot be the sole code billed with Z00.00 (Annual Wellness Exam). Payers expect a preventive medicine code for this visit type.`,
+        fix: "Replace CPT " + cptCode + " with a preventive medicine code: 99395 (age 18–39), 99396 (age 40–64), or 99397 (age 65+). If a separate problem was also addressed during the same encounter, you may bill the E&M code alongside the preventive code using Modifier -25 on the E&M claim line.",
+      });
+    }
+
+    // Rule: Physical therapy code with non-musculoskeletal diagnosis
+    if (cptCode === "97110" && !["Musculoskeletal", "Injury"].includes(icdInfo.category)) {
+      errors.push({
+        field: "icd10",
+        severity: "warning",
+        message: `CPT 97110 (Therapeutic Exercise) with diagnosis "${icdInfo.description}" (${icd}) may be questioned for medical necessity.`,
+        fix: "Therapeutic exercise is typically supported by musculoskeletal diagnoses. Verify that the clinical notes document a functional deficit that justifies therapeutic exercise for this condition.",
+      });
+    }
   }
 
   return errors;
