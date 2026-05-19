@@ -1,29 +1,29 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { AlertTriangle, CheckCircle, Loader2, Shield, ChevronRight, X, Sparkles, Zap, User, Lightbulb } from "lucide-react";
-import { scrubClaim, CPT_CODES, ICD10_CODES, COMPAT_RULES, type ScrubError } from "@/data/mockData";
+import {
+  AlertTriangle, CheckCircle, Loader2, Shield, ChevronRight, X,
+  Sparkles, Zap, User, Lightbulb, ChevronDown, BookOpen,
+} from "lucide-react";
+import {
+  scrubClaim, CPT_CODES, ICD10_CODES, COMPAT_RULES, SPECIALTY_CONFIGS,
+  type ScrubError, type SpecialtyConfig,
+} from "@/data/mockData";
 import type { Claim } from "@/data/mockData";
 
 interface ClaimsFormData {
-  patient: string;
-  dob: string;
-  insuranceId: string;
-  cpt: string;
-  icd10: string;
+  patient: string; dob: string; insuranceId: string; cpt: string; icd10: string;
 }
 
-interface Props {
-  onSubmit: (claim: Claim) => void;
-}
+interface Props { onSubmit: (claim: Claim) => void; }
 
 const PAYERS = ["BlueCross", "Medicare", "Medicaid", "Aetna", "UnitedHealth", "Humana", "Cigna", "Other"];
 
-const EXAMPLES = [
+const EXAMPLES: { label: string; cpt: string; icd10: string; tag: "error" | "ok" }[] = [
   { label: "Fracture + E&M mismatch", cpt: "99213", icd10: "S92.501A", tag: "error" },
   { label: "Arthroscopy + URI mismatch", cpt: "29881", icd10: "J06.9", tag: "error" },
   { label: "Wellness + E&M mismatch", cpt: "99213", icd10: "Z00.00", tag: "error" },
   { label: "Shoulder Scope + Knee Dx", cpt: "29827", icd10: "M17.11", tag: "error" },
-  { label: "Clean claim", cpt: "99396", icd10: "Z00.00", tag: "ok" },
-] as const;
+  { label: "Clean preventive claim", cpt: "99396", icd10: "Z00.00", tag: "ok" },
+];
 
 const PATIENT_NAMES = [
   "Vincent Conklin", "Diane Westbrook", "Harold Pemberton", "Carol Fitzpatrick",
@@ -57,7 +57,21 @@ const CATEGORY_BADGE: Record<string, string> = {
   "Family History": "bg-slate-100 text-slate-600",
 };
 
-// ── Highlight matching text ────────────────────────────────────────────────────
+// Color map for specialty accents
+const SPECIALTY_COLORS: Record<string, {
+  dot: string; bg: string; border: string; text: string; heading: string;
+  badge: string; badgeText: string; pillActive: string;
+}> = {
+  blue:    { dot: "bg-blue-500",    bg: "bg-blue-50",    border: "border-blue-200",   text: "text-blue-700",   heading: "text-blue-900",   badge: "bg-blue-100",   badgeText: "text-blue-700",   pillActive: "bg-blue-600 text-white"    },
+  orange:  { dot: "bg-orange-500",  bg: "bg-orange-50",  border: "border-orange-200", text: "text-orange-700", heading: "text-orange-900", badge: "bg-orange-100", badgeText: "text-orange-700", pillActive: "bg-orange-600 text-white"  },
+  pink:    { dot: "bg-pink-500",    bg: "bg-pink-50",    border: "border-pink-200",   text: "text-pink-700",   heading: "text-pink-900",   badge: "bg-pink-100",   badgeText: "text-pink-700",   pillActive: "bg-pink-600 text-white"    },
+  violet:  { dot: "bg-violet-500",  bg: "bg-violet-50",  border: "border-violet-200", text: "text-violet-700", heading: "text-violet-900", badge: "bg-violet-100", badgeText: "text-violet-700", pillActive: "bg-violet-600 text-white"  },
+  teal:    { dot: "bg-teal-500",    bg: "bg-teal-50",    border: "border-teal-200",   text: "text-teal-700",   heading: "text-teal-900",   badge: "bg-teal-100",   badgeText: "text-teal-700",   pillActive: "bg-teal-600 text-white"    },
+  emerald: { dot: "bg-emerald-500", bg: "bg-emerald-50", border: "border-emerald-200",text: "text-emerald-700",heading: "text-emerald-900",badge: "bg-emerald-100",badgeText: "text-emerald-700",pillActive: "bg-emerald-600 text-white" },
+  amber:   { dot: "bg-amber-500",   bg: "bg-amber-50",   border: "border-amber-200",  text: "text-amber-700",  heading: "text-amber-900",  badge: "bg-amber-100",  badgeText: "text-amber-700",  pillActive: "bg-amber-600 text-white"   },
+};
+
+// ── Highlight helper ──────────────────────────────────────────────────────────
 function Highlight({ text, query, inverted }: { text: string; query: string; inverted?: boolean }) {
   if (!query.trim()) return <>{text}</>;
   const idx = text.toLowerCase().indexOf(query.toLowerCase());
@@ -73,14 +87,96 @@ function Highlight({ text, query, inverted }: { text: string; query: string; inv
   );
 }
 
-// ── Reusable code typeahead dropdown ─────────────────────────────────────────
+// ── Specialty selector ────────────────────────────────────────────────────────
+function SpecialtySelector({
+  value, onChange,
+}: { value: string; onChange: (id: string) => void }) {
+  const specialties = Object.values(SPECIALTY_CONFIGS);
+  return (
+    <div className="flex flex-wrap gap-2">
+      {specialties.map(sp => {
+        const c = SPECIALTY_COLORS[sp.color];
+        const active = value === sp.id;
+        return (
+          <button
+            key={sp.id}
+            onClick={() => onChange(sp.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+              active
+                ? `${c.pillActive} border-transparent shadow-sm`
+                : "bg-card border-border text-muted-foreground hover:border-border hover:text-foreground hover:bg-muted"
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full shrink-0 ${active ? "bg-white/80" : c.dot}`} />
+            {sp.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Specialty info card ───────────────────────────────────────────────────────
+function SpecialtyInfoCard({ spec, collapsed, onToggle }: {
+  spec: SpecialtyConfig; collapsed: boolean; onToggle: () => void;
+}) {
+  const c = SPECIALTY_COLORS[spec.color];
+  return (
+    <div className={`rounded-xl border ${c.border} ${c.bg} overflow-hidden transition-all`}>
+      <button
+        onClick={onToggle}
+        className={`w-full flex items-center justify-between px-4 py-3 ${c.bg}`}
+      >
+        <div className="flex items-center gap-2.5">
+          <span className={`w-2.5 h-2.5 rounded-full ${c.dot} shrink-0`} />
+          <span className={`text-sm font-semibold ${c.heading}`}>{spec.label} Mode</span>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.badge} ${c.badgeText}`}>
+            Active
+          </span>
+        </div>
+        <ChevronDown className={`w-4 h-4 ${c.text} transition-transform ${collapsed ? "" : "rotate-180"}`} />
+      </button>
+
+      {!collapsed && (
+        <div className={`px-4 pb-4 border-t ${c.border}`}>
+          <p className={`text-xs ${c.text} mt-3 mb-3 leading-relaxed`}>{spec.description}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <p className={`text-xs font-semibold uppercase tracking-wide ${c.text} mb-1.5 flex items-center gap-1.5`}>
+                <BookOpen className="w-3 h-3" /> What we check
+              </p>
+              <ul className="space-y-1">
+                {spec.checks.map(ch => (
+                  <li key={ch} className="flex items-start gap-1.5">
+                    <CheckCircle className={`w-3 h-3 mt-0.5 shrink-0 ${c.text}`} />
+                    <span className={`text-xs ${c.text}`}>{ch}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className={`text-xs font-semibold uppercase tracking-wide ${c.text} mb-1.5 flex items-center gap-1.5`}>
+                <AlertTriangle className="w-3 h-3" /> Common denials
+              </p>
+              <ul className="space-y-1">
+                {spec.commonDenials.map(d => (
+                  <li key={d} className="flex items-start gap-1.5">
+                    <AlertTriangle className={`w-3 h-3 mt-0.5 shrink-0 ${c.text} opacity-70`} />
+                    <span className={`text-xs ${c.text}`}>{d}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Code typeahead ────────────────────────────────────────────────────────────
 function CodeTypeahead({
-  value,
-  onTextChange,
-  onSelect,
-  placeholder,
-  codeMap,
-  inputClassName,
+  value, onTextChange, onSelect, placeholder, codeMap, inputClassName, showAllToggle, onToggleAll, showingAll,
 }: {
   value: string;
   onTextChange: (v: string) => void;
@@ -88,6 +184,9 @@ function CodeTypeahead({
   placeholder?: string;
   codeMap: Record<string, { description: string; category: string }>;
   inputClassName?: string;
+  showAllToggle?: boolean;
+  onToggleAll?: () => void;
+  showingAll?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [hiIdx, setHiIdx] = useState(-1);
@@ -99,7 +198,7 @@ function CodeTypeahead({
     const entries = Object.entries(codeMap);
     if (!q) return entries.slice(0, 7);
     const codeFirst = entries.filter(([code]) => code.toLowerCase().startsWith(q));
-    const descOnly = entries.filter(([code, info]) =>
+    const descOnly  = entries.filter(([code, info]) =>
       !code.toLowerCase().startsWith(q) && info.description.toLowerCase().includes(q)
     );
     return [...codeFirst, ...descOnly].slice(0, 7);
@@ -108,8 +207,7 @@ function CodeTypeahead({
   useEffect(() => {
     function handler(e: PointerEvent) {
       if (!inputRef.current?.contains(e.target as Node) && !listRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-        setHiIdx(-1);
+        setOpen(false); setHiIdx(-1);
       }
     }
     document.addEventListener("pointerdown", handler);
@@ -117,18 +215,11 @@ function CodeTypeahead({
   }, []);
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (!open || suggestions.length === 0) return;
+    if (!open || !suggestions.length) return;
     if (e.key === "ArrowDown") { e.preventDefault(); setHiIdx(i => Math.min(i + 1, suggestions.length - 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setHiIdx(i => Math.max(i - 1, 0)); }
-    else if (e.key === "Enter" && hiIdx >= 0) {
-      e.preventDefault();
-      onSelect(suggestions[hiIdx][0]);
-      setOpen(false);
-      setHiIdx(-1);
-    } else if (e.key === "Escape") {
-      setOpen(false);
-      setHiIdx(-1);
-    }
+    else if (e.key === "Enter" && hiIdx >= 0) { e.preventDefault(); onSelect(suggestions[hiIdx][0]); setOpen(false); setHiIdx(-1); }
+    else if (e.key === "Escape") { setOpen(false); setHiIdx(-1); }
   }
 
   const selectedInfo = codeMap[value.trim().toUpperCase()] || codeMap[value.trim()];
@@ -145,48 +236,70 @@ function CodeTypeahead({
         onChange={e => { onTextChange(e.target.value); setOpen(true); setHiIdx(-1); }}
         onKeyDown={handleKeyDown}
       />
-      {/* Inline hint when code is recognized */}
       {selectedInfo && !open && (
         <p className="text-xs text-blue-600 mt-1 flex items-center gap-1.5 truncate">
-          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${CATEGORY_BADGE[selectedInfo.category] ?? "bg-muted text-muted-foreground"}`}>
+          <span className={`px-1.5 py-0.5 rounded text-xs font-medium shrink-0 ${CATEGORY_BADGE[selectedInfo.category] ?? "bg-muted text-muted-foreground"}`}>
             {selectedInfo.category}
           </span>
           {selectedInfo.description}
         </p>
       )}
 
-      {open && suggestions.length > 0 && (
+      {open && (
         <div ref={listRef} className="absolute z-50 mt-1 w-full bg-card border border-border rounded-xl shadow-xl overflow-hidden">
-          <p className="px-3 py-1.5 text-xs text-muted-foreground border-b border-border bg-muted/50 flex items-center justify-between">
-            <span>{value.trim() ? "Matching codes" : "Common codes"}</span>
-            <span className="opacity-60">↑↓ navigate · Enter select · Esc close</span>
-          </p>
-          {suggestions.map(([code, info], i) => {
-            const active = i === hiIdx;
-            return (
-              <button
-                key={code}
-                onPointerDown={e => { e.preventDefault(); onSelect(code); setOpen(false); setHiIdx(-1); }}
-                className={`w-full text-left px-4 py-2.5 flex items-center gap-3 transition-colors ${
-                  active ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-                }`}
-              >
-                <span className={`font-mono text-xs font-bold shrink-0 w-20 ${active ? "text-primary-foreground" : "text-primary"}`}>
-                  <Highlight text={code} query={value} inverted={active} />
-                </span>
-                <span className={`flex-1 text-xs ${active ? "text-primary-foreground" : "text-foreground"}`}>
-                  <Highlight text={info.description} query={value} inverted={active} />
-                </span>
-                <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${
-                  active ? "bg-primary-foreground/20 text-primary-foreground" : (CATEGORY_BADGE[info.category] ?? "bg-muted text-muted-foreground")
-                }`}>
-                  {info.category}
-                </span>
-              </button>
-            );
-          })}
-          {value.trim() && suggestions.length === 0 && (
-            <p className="px-4 py-3 text-xs text-muted-foreground">No matching codes — you can still enter it manually for validation.</p>
+          <div className="px-3 py-1.5 text-xs text-muted-foreground border-b border-border bg-muted/50 flex items-center justify-between">
+            <span>
+              {value.trim() ? "Matching codes" : "Suggested codes"}
+              {!showingAll && showAllToggle && (
+                <span className="ml-1 opacity-60">· specialty filtered</span>
+              )}
+            </span>
+            <div className="flex items-center gap-2">
+              {showAllToggle && (
+                <button
+                  onPointerDown={e => { e.preventDefault(); onToggleAll?.(); }}
+                  className={`text-xs px-2 py-0.5 rounded font-medium transition-colors ${
+                    showingAll
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted-foreground/20 text-muted-foreground hover:bg-muted-foreground/30"
+                  }`}
+                >
+                  {showingAll ? "Specialty only" : "Show all codes"}
+                </button>
+              )}
+              <span className="opacity-50">↑↓ · Enter · Esc</span>
+            </div>
+          </div>
+          {suggestions.length === 0 ? (
+            <p className="px-4 py-3 text-xs text-muted-foreground">
+              No matching codes in {showingAll ? "library" : "specialty"}.
+              {!showingAll && " Try toggling 'Show all codes'."}
+            </p>
+          ) : (
+            suggestions.map(([code, info], i) => {
+              const active = i === hiIdx;
+              return (
+                <button
+                  key={code}
+                  onPointerDown={e => { e.preventDefault(); onSelect(code); setOpen(false); setHiIdx(-1); }}
+                  className={`w-full text-left px-4 py-2.5 flex items-center gap-3 transition-colors ${
+                    active ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                  }`}
+                >
+                  <span className={`font-mono text-xs font-bold shrink-0 w-20 ${active ? "text-primary-foreground" : "text-primary"}`}>
+                    <Highlight text={code} query={value} inverted={active} />
+                  </span>
+                  <span className={`flex-1 text-xs ${active ? "text-primary-foreground" : "text-foreground"}`}>
+                    <Highlight text={info.description} query={value} inverted={active} />
+                  </span>
+                  <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${
+                    active ? "bg-primary-foreground/20 text-primary-foreground" : (CATEGORY_BADGE[info.category] ?? "bg-muted text-muted-foreground")
+                  }`}>
+                    {info.category}
+                  </span>
+                </button>
+              );
+            })
           )}
         </div>
       )}
@@ -194,7 +307,7 @@ function CodeTypeahead({
   );
 }
 
-// ── Result card (error / warning / info) ─────────────────────────────────────
+// ── Result card ───────────────────────────────────────────────────────────────
 function ScrubCard({ error }: { error: ScrubError }) {
   const s = error.severity;
   const styles = {
@@ -209,9 +322,7 @@ function ScrubCard({ error }: { error: ScrubError }) {
       <div className="flex items-start gap-3">
         <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${styles.icon}`} />
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-semibold ${styles.label}`}>
-            {styles.tag} · {fieldLabel}
-          </p>
+          <p className={`text-sm font-semibold ${styles.label}`}>{styles.tag} · {fieldLabel}</p>
           <p className={`text-sm mt-1 ${styles.body}`}>{error.message}</p>
           <div className={`mt-2 pt-2 border-t ${styles.divider}`}>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
@@ -225,7 +336,7 @@ function ScrubCard({ error }: { error: ScrubError }) {
   );
 }
 
-// ── Live compatibility indicator ──────────────────────────────────────────────
+// ── Live compat hook ──────────────────────────────────────────────────────────
 function useLiveCompat(cpt: string, icd10: string) {
   return useMemo(() => {
     const c = cpt.trim();
@@ -234,7 +345,6 @@ function useLiveCompat(cpt: string, icd10: string) {
     const cptInfo = CPT_CODES[c];
     const icdInfo = ICD10_CODES[icd];
     if (!cptInfo || !icdInfo) return null;
-
     const issues: string[] = [];
     for (const rule of COMPAT_RULES) {
       if (rule.match(c, icd, cptInfo.category, icdInfo.category)) {
@@ -254,11 +364,34 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // Specialty mode
+  const [specialtyId, setSpecialtyId] = useState("family-medicine");
+  const [infoCollapsed, setInfoCollapsed] = useState(false);
+  const [showAllCpt, setShowAllCpt] = useState(false);
+  const [showAllIcd, setShowAllIcd] = useState(false);
+
+  const specialty = SPECIALTY_CONFIGS[specialtyId];
+
+  // Build filtered code maps
+  const cptMap = useMemo(() => {
+    if (showAllCpt) return CPT_CODES;
+    return Object.fromEntries(
+      specialty.cptCodes.filter(c => CPT_CODES[c]).map(c => [c, CPT_CODES[c]])
+    );
+  }, [specialtyId, showAllCpt]);
+
+  const icdMap = useMemo(() => {
+    if (showAllIcd) return ICD10_CODES;
+    return Object.fromEntries(
+      specialty.icd10Codes.filter(c => ICD10_CODES[c]).map(c => [c, ICD10_CODES[c]])
+    );
+  }, [specialtyId, showAllIcd]);
+
   // Patient name typeahead
   const [showNameDrop, setShowNameDrop] = useState(false);
   const [nameHiIdx, setNameHiIdx] = useState(-1);
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const nameDropRef = useRef<HTMLDivElement>(null);
+  const nameDropRef  = useRef<HTMLDivElement>(null);
 
   const nameSuggestions = useMemo(() => {
     const q = form.patient.trim().toLowerCase();
@@ -269,8 +402,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
   useEffect(() => {
     function handler(e: PointerEvent) {
       if (!nameInputRef.current?.contains(e.target as Node) && !nameDropRef.current?.contains(e.target as Node)) {
-        setShowNameDrop(false);
-        setNameHiIdx(-1);
+        setShowNameDrop(false); setNameHiIdx(-1);
       }
     }
     document.addEventListener("pointerdown", handler);
@@ -279,14 +411,19 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
 
   const liveCompat = useLiveCompat(form.cpt, form.icd10);
 
-  const errorFields = new Set(scrubResult?.filter(e => e.severity === "error").map(e => e.field) ?? []);
+  const errorFields = new Set(scrubResult?.filter(e => e.severity === "error").map(e => e.field)   ?? []);
   const warnFields  = new Set(scrubResult?.filter(e => e.severity === "warning").map(e => e.field) ?? []);
-  const infoFields  = new Set(scrubResult?.filter(e => e.severity === "info").map(e => e.field) ?? []);
+  const infoFields  = new Set(scrubResult?.filter(e => e.severity === "info").map(e => e.field)    ?? []);
 
   function updateForm(patch: Partial<ClaimsFormData>) {
     setForm(f => ({ ...f, ...patch }));
-    setScrubResult(null);
-    setSubmitted(false);
+    setScrubResult(null); setSubmitted(false);
+  }
+
+  function changeSpecialty(id: string) {
+    setSpecialtyId(id);
+    setShowAllCpt(false); setShowAllIcd(false);
+    setScrubResult(null); setSubmitted(false);
   }
 
   function fieldClass(field: string) {
@@ -299,9 +436,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
   const inputBase = "w-full rounded-lg border px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-colors";
 
   async function handleScrub() {
-    setIsScrubbing(true);
-    setScrubResult(null);
-    setSubmitted(false);
+    setIsScrubbing(true); setScrubResult(null); setSubmitted(false);
     await new Promise(r => setTimeout(r, 700));
     setScrubResult(scrubClaim(form));
     setIsScrubbing(false);
@@ -309,23 +444,16 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
 
   function handleSubmit() {
     if (scrubResult?.some(e => e.severity === "error")) return;
-    const newClaim: Claim = {
+    onSubmit({
       id: `CLM-2024-${String(Math.floor(Math.random() * 900) + 100).padStart(3, "0")}`,
-      patient: form.patient,
-      dob: form.dob,
-      insuranceId: form.insuranceId,
-      cpt: form.cpt.trim(),
-      icd10: form.icd10.trim().toUpperCase(),
-      payer,
-      amount: parseFloat(amount) || 145.00,
-      status: "Pending",
-      submittedAt: new Date().toISOString(),
-    };
-    onSubmit(newClaim);
+      patient: form.patient, dob: form.dob, insuranceId: form.insuranceId,
+      cpt: form.cpt.trim(), icd10: form.icd10.trim().toUpperCase(),
+      payer, amount: parseFloat(amount) || 145.00,
+      status: "Pending", submittedAt: new Date().toISOString(),
+    });
     setSubmitted(true);
     setForm({ patient: "", dob: "", insuranceId: "", cpt: "", icd10: "" });
-    setAmount("");
-    setScrubResult(null);
+    setAmount(""); setScrubResult(null);
   }
 
   const errors   = scrubResult?.filter(e => e.severity === "error")   ?? [];
@@ -335,15 +463,38 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
   const hasWarnings = warnings.length > 0;
   const isClean = scrubResult !== null && !hasErrors && !hasWarnings;
 
+  const sc = SPECIALTY_COLORS[specialty.color];
+
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-5">
+
+      {/* ── Page header ── */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Claims Scrubber</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Scrub at any time. CPT and ICD-10 fields support typeahead — search by code number or description.
+          Select a specialty to filter code suggestions and activate focused validation rules.
         </p>
       </div>
 
+      {/* ── Specialty selector ── */}
+      <div className="bg-card border border-border rounded-xl p-4 space-y-3 shadow-sm">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Specialty Mode</p>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${sc.badge} ${sc.badgeText}`}>
+            {specialty.label}
+          </span>
+        </div>
+        <SpecialtySelector value={specialtyId} onChange={changeSpecialty} />
+      </div>
+
+      {/* ── Specialty info card ── */}
+      <SpecialtyInfoCard
+        spec={specialty}
+        collapsed={infoCollapsed}
+        onToggle={() => setInfoCollapsed(c => !c)}
+      />
+
+      {/* ── Success banner ── */}
       {submitted && (
         <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
           <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -360,11 +511,17 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* ── Form ── */}
         <div className="lg:col-span-3 bg-card border border-border rounded-xl shadow-sm">
-          <div className="px-6 py-4 border-b border-border">
-            <h2 className="text-base font-semibold text-foreground">Claim Information</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              <span className="text-red-500 font-medium">*</span> Required · all other fields optional but improve validation
-            </p>
+          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-foreground">Claim Information</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                <span className="text-red-500 font-medium">*</span> Required · all other fields optional
+              </p>
+            </div>
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${sc.bg} ${sc.border} border`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+              <span className={`text-xs font-medium ${sc.text}`}>{specialty.label}</span>
+            </div>
           </div>
 
           <div className="p-6 space-y-5">
@@ -384,9 +541,9 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                   onFocus={() => setShowNameDrop(true)}
                   onChange={e => { updateForm({ patient: e.target.value }); setShowNameDrop(true); setNameHiIdx(-1); }}
                   onKeyDown={e => {
-                    if (!showNameDrop || nameSuggestions.length === 0) return;
-                    if (e.key === "ArrowDown") { e.preventDefault(); setNameHiIdx(i => Math.min(i + 1, nameSuggestions.length - 1)); }
-                    else if (e.key === "ArrowUp") { e.preventDefault(); setNameHiIdx(i => Math.max(i - 1, 0)); }
+                    if (!showNameDrop || !nameSuggestions.length) return;
+                    if (e.key === "ArrowDown")  { e.preventDefault(); setNameHiIdx(i => Math.min(i + 1, nameSuggestions.length - 1)); }
+                    else if (e.key === "ArrowUp")  { e.preventDefault(); setNameHiIdx(i => Math.max(i - 1, 0)); }
                     else if (e.key === "Enter" && nameHiIdx >= 0) { e.preventDefault(); updateForm({ patient: nameSuggestions[nameHiIdx] }); setShowNameDrop(false); setNameHiIdx(-1); }
                     else if (e.key === "Escape") { setShowNameDrop(false); setNameHiIdx(-1); }
                   }}
@@ -459,12 +616,10 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
               </label>
               <input type="number" min="0" step="0.01"
                 className={`${inputBase} border-border bg-background`}
-                placeholder="e.g., 145.00"
-                value={amount}
-                onChange={e => setAmount(e.target.value)} />
+                placeholder="e.g., 145.00" value={amount} onChange={e => setAmount(e.target.value)} />
             </div>
 
-            {/* CPT + ICD-10 — typeahead */}
+            {/* CPT + ICD-10 typeahead */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">
@@ -474,9 +629,12 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                   value={form.cpt}
                   onTextChange={v => updateForm({ cpt: v })}
                   onSelect={code => updateForm({ cpt: code })}
-                  placeholder="e.g., 99213 or 'office visit'"
-                  codeMap={CPT_CODES}
+                  placeholder={`${specialty.label} codes…`}
+                  codeMap={cptMap}
                   inputClassName={`${inputBase} ${fieldClass("cpt")}`}
+                  showAllToggle
+                  showingAll={showAllCpt}
+                  onToggleAll={() => setShowAllCpt(v => !v)}
                 />
               </div>
               <div>
@@ -487,9 +645,12 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                   value={form.icd10}
                   onTextChange={v => updateForm({ icd10: v })}
                   onSelect={code => updateForm({ icd10: code })}
-                  placeholder="e.g., M54.5 or 'back pain'"
-                  codeMap={ICD10_CODES}
+                  placeholder={`${specialty.label} diagnoses…`}
+                  codeMap={icdMap}
                   inputClassName={`${inputBase} ${fieldClass("icd10")}`}
+                  showAllToggle
+                  showingAll={showAllIcd}
+                  onToggleAll={() => setShowAllIcd(v => !v)}
                 />
               </div>
             </div>
@@ -524,7 +685,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
               </div>
             )}
 
-            {/* Quick example scenarios */}
+            {/* Scenario examples */}
             <div className="rounded-lg bg-muted border border-border p-3">
               <p className="text-xs font-medium text-muted-foreground mb-2">Load a known scenario:</p>
               <div className="flex flex-wrap gap-2">
@@ -543,7 +704,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
               </div>
             </div>
 
-            {/* Action buttons */}
+            {/* Actions */}
             <div className="flex gap-3 pt-1">
               <button onClick={handleScrub} disabled={isScrubbing}
                 className="flex-1 flex items-center justify-center gap-2 bg-foreground text-background hover:opacity-90 disabled:opacity-50 rounded-xl py-3 text-sm font-semibold transition-all">
@@ -575,6 +736,10 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                   ? "Live check running — click Scrub Claim for full validation."
                   : "Click Scrub Claim at any time to see step-by-step guidance."}
               </p>
+              <div className={`mt-4 rounded-lg ${sc.bg} ${sc.border} border px-3 py-2 text-left`}>
+                <p className={`text-xs font-semibold ${sc.text} mb-1`}>{specialty.label} rules active</p>
+                <p className={`text-xs ${sc.text} opacity-80`}>{specialty.checks[0]}</p>
+              </div>
             </div>
           )}
 
@@ -583,14 +748,13 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
               <Loader2 className="w-8 h-8 text-primary mx-auto mb-3 animate-spin" />
               <p className="text-sm font-medium text-foreground">Analyzing claim…</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Checking fields, reference library, and compatibility rules.
+                Applying {specialty.label} rules + reference library checks.
               </p>
             </div>
           )}
 
           {scrubResult !== null && !isScrubbing && (
             <>
-              {/* Summary banner */}
               <div className={`rounded-xl border p-4 flex items-start gap-3 ${
                 isClean ? "bg-emerald-50 border-emerald-200"
                 : hasErrors ? "bg-red-50 border-red-200"
@@ -610,10 +774,10 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                     {isClean
                       ? "Claim is Clean — ready to submit!"
                       : hasErrors
-                        ? `${errors.length} error${errors.length > 1 ? "s" : ""}${warnings.length ? `, ${warnings.length} warning${warnings.length > 1 ? "s" : ""}` : ""}${infos.length ? `, ${infos.length} suggestion${infos.length > 1 ? "s" : ""}` : ""}`
+                        ? `${errors.length} error${errors.length !== 1 ? "s" : ""}${warnings.length ? `, ${warnings.length} warning${warnings.length !== 1 ? "s" : ""}` : ""}${infos.length ? `, ${infos.length} suggestion${infos.length !== 1 ? "s" : ""}` : ""}`
                         : hasWarnings
-                          ? `${warnings.length} warning${warnings.length > 1 ? "s" : ""}${infos.length ? `, ${infos.length} suggestion${infos.length > 1 ? "s" : ""}` : ""} — no critical errors`
-                          : `${infos.length} suggestion${infos.length > 1 ? "s" : ""} — fill in more fields for deeper checks`}
+                          ? `${warnings.length} warning${warnings.length !== 1 ? "s" : ""}${infos.length ? `, ${infos.length} suggestion${infos.length !== 1 ? "s" : ""}` : ""} — no critical errors`
+                          : `${infos.length} suggestion${infos.length !== 1 ? "s" : ""} — add more details for deeper checks`}
                   </p>
                   <p className={`text-xs mt-0.5 ${
                     isClean ? "text-emerald-700" : hasErrors ? "text-red-700"
@@ -621,9 +785,9 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                   }`}>
                     {isClean
                       ? "All provided fields validated. No billing conflicts detected."
-                      : hasErrors ? "Fix red errors before submitting. Warnings and suggestions are optional improvements."
-                      : hasWarnings ? "No blocking errors. Review warnings, then submit when ready."
-                      : "No errors found. Add more fields and scrub again to unlock additional checks."}
+                      : hasErrors ? "Fix red errors before submitting."
+                      : hasWarnings ? "No blocking errors — review warnings then submit."
+                      : "Fill in more fields and scrub again to unlock more checks."}
                   </p>
                 </div>
               </div>
@@ -648,7 +812,7 @@ export default function ClaimsScrubber({ onSubmit }: Props) {
                     "Date of birth confirmed",
                     ...(form.cpt && CPT_CODES[form.cpt.trim()] ? [`CPT ${form.cpt} — ${CPT_CODES[form.cpt.trim()].description}`] : []),
                     ...(form.icd10 && ICD10_CODES[form.icd10.trim().toUpperCase()] ? [`ICD-10 ${form.icd10.toUpperCase()} — ${ICD10_CODES[form.icd10.trim().toUpperCase()].description}`] : []),
-                    ...(form.cpt && form.icd10 && CPT_CODES[form.cpt.trim()] && ICD10_CODES[form.icd10.trim().toUpperCase()] ? ["No CPT/ICD-10 compatibility conflicts detected"] : []),
+                    ...(form.cpt && form.icd10 && CPT_CODES[form.cpt.trim()] && ICD10_CODES[form.icd10.trim().toUpperCase()] ? ["No CPT/ICD-10 compatibility conflicts"] : []),
                     "No modifier requirement flagged",
                   ].map(c => (
                     <div key={c} className="flex items-start gap-2">

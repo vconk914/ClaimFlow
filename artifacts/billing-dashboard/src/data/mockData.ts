@@ -313,6 +313,155 @@ export const COMPAT_RULES: CompatRule[] = [
   },
 ];
 
+// ─── Specialty Configurations ─────────────────────────────────────────────────
+
+export interface SpecialtyConfig {
+  id: string;
+  label: string;
+  color: string;       // tailwind color name, e.g. "blue"
+  description: string;
+  checks: string[];
+  commonDenials: string[];
+  cptCodes: string[];
+  icd10Codes: string[];
+}
+
+export const SPECIALTY_CONFIGS: Record<string, SpecialtyConfig> = {
+  "family-medicine": {
+    id: "family-medicine",
+    label: "Family Medicine",
+    color: "blue",
+    description: "Broad primary care — acute visits, chronic disease management, preventive exams, and routine labs.",
+    checks: [
+      "Wellness vs. E&M code confusion (Z00.00 requires preventive CPT)",
+      "Age-appropriate preventive medicine code selection",
+      "Chronic disease management with correct specificity",
+      "Lab medical necessity documentation",
+    ],
+    commonDenials: [
+      "Billing 99213 with Z00.00 — use 99395–99397 instead",
+      "Missing Modifier -25 on same-day E&M + preventive",
+      "Unspecified diagnosis codes when specific codes exist",
+    ],
+    cptCodes: ["99201","99202","99203","99204","99205","99211","99212","99213","99214","99215","99395","99396","99397","80053","85027","83036","84443","82947","93000"],
+    icd10Codes: ["M54.5","I10","E11.9","E78.5","J06.9","Z00.00","Z00.01","Z23","F41.1","K21.0","N39.0","R51.9","R05.9","E03.9"],
+  },
+  "orthopedics": {
+    id: "orthopedics",
+    label: "Orthopedics",
+    color: "orange",
+    description: "Musculoskeletal procedures, joint surgery, fracture treatment, and imaging — all with strict site-matching requirements.",
+    checks: [
+      "Procedure and diagnosis must match joint site (knee, hip, shoulder)",
+      "Prior authorization for joint replacement surgery",
+      "Fracture treatment vs. E&M code distinction",
+      "MRI and X-ray medical necessity vs. diagnosis",
+    ],
+    commonDenials: [
+      "Arthroscopy without a joint-specific diagnosis code",
+      "Joint replacement without documented OA severity",
+      "Missing laterality (left/right) on extremity diagnosis codes",
+    ],
+    cptCodes: ["29881","29827","27447","27130","28450","20610","73721","72148","73030","97001","99213","99214"],
+    icd10Codes: ["M17.11","M17.12","M16.11","M25.511","M25.512","M75.1","M23.61","M23.62","M54.5","M54.16","S92.501A","S83.511A","S83.512A","S46.011A","G89.29"],
+  },
+  "cardiology": {
+    id: "cardiology",
+    label: "Cardiology",
+    color: "pink",
+    description: "Cardiac diagnostics and management — ECG, echo, stress testing, and cardiovascular disease coding.",
+    checks: [
+      "ECG and echocardiography require a cardiovascular primary diagnosis",
+      "Stress test indication must be documented in chart notes",
+      "Payer prior auth for echocardiography in some plans",
+      "Cardiology codes questioned with unrelated primary diagnoses",
+    ],
+    commonDenials: [
+      "ECG (93000) with musculoskeletal or unrelated primary diagnosis",
+      "Echo (93306) without documented cardiac indication",
+      "Stress test billed without chest pain or cardiac risk documentation",
+    ],
+    cptCodes: ["93000","93010","93306","93015","99213","99214","99215","80053","82947"],
+    icd10Codes: ["I10","I25.10","I48.91","I50.9","R00.0","R55","E78.5","E11.9","E03.9"],
+  },
+  "behavioral-health": {
+    id: "behavioral-health",
+    label: "Behavioral Health",
+    color: "violet",
+    description: "Psychiatric evaluation, individual and family psychotherapy — all requiring DSM-5 diagnosis codes.",
+    checks: [
+      "Mental health diagnosis (DSM-5) required for all therapy claims",
+      "Session duration must match CPT code (45 min vs. 60 min)",
+      "Prior authorization for ongoing therapy beyond initial sessions",
+      "E&M and psychotherapy billed together require documentation",
+    ],
+    commonDenials: [
+      "Therapy CPT without a qualifying DSM-5 diagnosis code",
+      "Session time code mismatch (90834 vs. 90837)",
+      "Non-covered behavioral health services per payer plan",
+    ],
+    cptCodes: ["90791","90834","90837","90847","99213","99214"],
+    icd10Codes: ["F32.1","F33.0","F41.1","F43.10"],
+  },
+  "physical-therapy": {
+    id: "physical-therapy",
+    label: "Physical Therapy",
+    color: "teal",
+    description: "Therapeutic exercises, manual therapy, and traction — tied closely to musculoskeletal and injury diagnoses.",
+    checks: [
+      "Musculoskeletal or injury diagnosis required for all PT codes",
+      "Functional deficit must be documented in the treatment plan",
+      "Therapy necessity vs. diagnosis alignment verified",
+      "Correct 15-minute unit billing per CPT guidelines",
+    ],
+    commonDenials: [
+      "PT codes billed with non-musculoskeletal primary diagnosis",
+      "Missing or expired treatment plan on file",
+      "Exceeding payer-allowed units per visit or per episode",
+    ],
+    cptCodes: ["97001","97110","97140","97530","97012"],
+    icd10Codes: ["M54.5","M54.2","M17.11","M25.511","M75.1","M62.81","S83.511A","S46.011A","G89.29","M54.16","M23.61"],
+  },
+  "preventive-care": {
+    id: "preventive-care",
+    label: "Preventive Care",
+    color: "emerald",
+    description: "Annual wellness exams, immunizations, screenings, and age-specific preventive medicine codes.",
+    checks: [
+      "Age-appropriate preventive CPT code selection (18–39, 40–64, 65+)",
+      "Preventive diagnosis (Z00.xx) required for preventive CPT codes",
+      "Lab bundling rules apply — panels may not be billed separately",
+      "Modifier -25 required when E&M is billed with preventive same-day",
+    ],
+    commonDenials: [
+      "Wrong age bracket preventive code (e.g., 99395 for a 70-year-old)",
+      "Preventive CPT billed with a problem-focused diagnosis only",
+      "Separate billing of components already bundled in a panel",
+    ],
+    cptCodes: ["99385","99386","99387","99395","99396","99397","80053","85027","83036","84443","82947","93000","71046"],
+    icd10Codes: ["Z00.00","Z00.01","Z23","Z01.00","Z12.11","I10","E78.5","E11.9"],
+  },
+  "urgent-care": {
+    id: "urgent-care",
+    label: "Urgent Care",
+    color: "amber",
+    description: "Acute, unscheduled visits — high documentation requirements for E&M level and new vs. established patient status.",
+    checks: [
+      "E&M level must match documented medical decision complexity",
+      "New vs. established patient status verified (affects CPT selection)",
+      "Acute diagnosis required — chronic conditions need acute exacerbation note",
+      "Procedure necessity must be documented with acute primary diagnosis",
+    ],
+    commonDenials: [
+      "E&M level too high for documented complexity in chart notes",
+      "New patient code (992xx) billed for an established patient",
+      "Fracture or procedure code without supporting imaging or exam",
+    ],
+    cptCodes: ["99203","99204","99205","99213","99214","71046","93000","10060"],
+    icd10Codes: ["J06.9","J20.9","J18.9","N39.0","R51.9","R05.9","S92.501A","K21.0","R00.0"],
+  },
+};
+
 // ─── Validation ───────────────────────────────────────────────────────────────
 
 export interface ScrubError {
