@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, X, Send, ChevronDown, ChevronRight, Bot, Lightbulb, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
+import { Sparkles, X, Send, ChevronRight, Bot, Lightbulb, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
 
 // ─── Response library ─────────────────────────────────────────────────────────
 
@@ -206,7 +206,7 @@ export default function AIAssistant() {
     <>
       {/* Floating button */}
       <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
-        {/* Tip bubble */}
+        {/* Tip bubble — only when closed */}
         {!open && (
           <div className="max-w-[220px] bg-card border border-border shadow-lg rounded-xl px-3 py-2 text-[11px] text-muted-foreground leading-snug animate-in fade-in slide-in-from-bottom-2 duration-300">
             <span className="text-violet-600 font-semibold">AI Tip: </span>
@@ -215,13 +215,14 @@ export default function AIAssistant() {
         )}
         <button
           onClick={() => setOpen(o => !o)}
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all ${
-            open
-              ? "bg-muted text-muted-foreground hover:bg-muted/80"
-              : "bg-gradient-to-br from-violet-500 to-purple-600 text-white hover:scale-105 shadow-violet-200"
-          }`}
+          aria-label={open ? "Close AI Assistant" : "Open AI Assistant"}
+          title={open ? "Close AI Assistant" : "Open AI Assistant"}
+          className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-200 bg-gradient-to-br from-violet-500 to-purple-600 text-white hover:scale-105 hover:shadow-violet-300 active:scale-95"
         >
-          {open ? <ChevronDown className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
+          {open
+            ? <X className="w-5 h-5" />
+            : <Sparkles className="w-5 h-5" />
+          }
         </button>
       </div>
 
