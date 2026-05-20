@@ -1,16 +1,20 @@
 import { useState, useMemo } from "react";
-import { Search, Filter, Download, TrendingUp, CheckCircle, XCircle, Clock, ChevronUp, ChevronDown, GitBranch } from "lucide-react";
-import type { Claim, ClaimStatus } from "@/data/mockData";
-import ClaimTimelineModal from "@/components/ClaimTimelineModal";
-
-interface Props {
-  claims: Claim[];
-}
+import { Search, Filter, Download, TrendingUp, CheckCircle, XCircle, Clock, ChevronUp, ChevronDown, GitBranch, AlertTriangle, Send, RotateCcw, RefreshCw, ShieldCheck, FilePlus, DollarSign } from "lucide-react";
+import type { ClaimStatus } from "@/data/mockData";
+import { useClaimStore } from "@/context/ClaimStore";
+import ClaimDetailModal from "@/components/ClaimDetailModal";
+import type { Claim } from "@/data/mockData";
 
 const STATUS_CONFIG: Record<ClaimStatus, { label: string; bg: string; text: string; icon: any }> = {
-  Approved: { label: "Approved", bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle },
-  Rejected: { label: "Rejected", bg: "bg-red-100", text: "text-red-700", icon: XCircle },
-  Pending: { label: "Pending", bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
+  Draft:       { label: "Draft",       bg: "bg-slate-100",   text: "text-slate-700",   icon: FilePlus      },
+  Scrubbed:    { label: "Scrubbed",    bg: "bg-blue-100",    text: "text-blue-700",    icon: ShieldCheck   },
+  Submitted:   { label: "Submitted",   bg: "bg-violet-100",  text: "text-violet-700",  icon: Send          },
+  Pending:     { label: "Pending",     bg: "bg-amber-100",   text: "text-amber-700",   icon: Clock         },
+  Denied:      { label: "Denied",      bg: "bg-red-100",     text: "text-red-700",     icon: AlertTriangle },
+  Corrected:   { label: "Corrected",   bg: "bg-sky-100",     text: "text-sky-700",     icon: RotateCcw     },
+  Resubmitted: { label: "Resubmitted", bg: "bg-indigo-100",  text: "text-indigo-700",  icon: RefreshCw     },
+  Approved:    { label: "Approved",    bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle   },
+  Paid:        { label: "Paid",        bg: "bg-emerald-600", text: "text-white",        icon: DollarSign    },
 };
 
 function StatusBadge({ status }: { status: ClaimStatus }) {
@@ -36,7 +40,13 @@ function StatPill({ label, value, color }: { label: string; value: number; color
 type SortField = "submittedAt" | "patient" | "amount" | "status";
 type SortDir = "asc" | "desc";
 
-export default function Analytics({ claims }: Props) {
+const ALL_STATUSES: ClaimStatus[] = [
+  "Draft", "Scrubbed", "Submitted", "Pending", "Denied",
+  "Corrected", "Resubmitted", "Approved", "Paid",
+];
+
+export default function Analytics() {
+  const { claims, stats: storeStats } = useClaimStore();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ClaimStatus | "All">("All");
   const [sortField, setSortField] = useState<SortField>("submittedAt");
@@ -45,12 +55,15 @@ export default function Analytics({ claims }: Props) {
 
   const stats = useMemo(() => ({
     total: claims.length,
-    approved: claims.filter(c => c.status === "Approved").length,
-    rejected: claims.filter(c => c.status === "Rejected").length,
-    pending: claims.filter(c => c.status === "Pending").length,
-    totalRevenue: claims.filter(c => c.status === "Approved").reduce((sum, c) => sum + c.amount, 0),
-    atRisk: claims.filter(c => c.status === "Rejected").reduce((sum, c) => sum + c.amount, 0),
-  }), [claims]);
+    approved: storeStats.approved + storeStats.paid,
+    denied: storeStats.denied,
+    pending: storeStats.pending + storeStats.submitted + storeStats.resubmitted,
+    scrubbed: storeStats.scrubbed + storeStats.draft,
+    totalRevenue: storeStats.collectedRevenue,
+    atRisk: storeStats.revenueAtRisk,
+    pendingRevenue: storeStats.pendingRevenue,
+    cleanClaimRate: storeStats.cleanClaimRate,
+  }), [claims, storeStats]);
 
   const filtered = useMemo(() => {
     let result = [...claims];
@@ -118,20 +131,29 @@ export default function Analytics({ claims }: Props) {
 
       {/* Summary stats */}
       <div className="flex flex-wrap gap-3">
-        <StatPill label="Total Claims" value={stats.total} color="bg-card border-border text-foreground" />
-        <StatPill label="Approved" value={stats.approved} color="bg-emerald-50 border-emerald-200 text-emerald-800" />
-        <StatPill label="Rejected" value={stats.rejected} color="bg-red-50 border-red-200 text-red-800" />
-        <StatPill label="Pending" value={stats.pending} color="bg-amber-50 border-amber-200 text-amber-800" />
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-blue-50 border-blue-200 text-blue-800">
+        <StatPill label="Total Claims"    value={stats.total}           color="bg-card border-border text-foreground" />
+        <StatPill label="Approved / Paid" value={stats.approved}        color="bg-emerald-50 border-emerald-200 text-emerald-800" />
+        <StatPill label="Denied"          value={stats.denied}          color="bg-red-50 border-red-200 text-red-800" />
+        <StatPill label="In Progress"     value={stats.pending}         color="bg-amber-50 border-amber-200 text-amber-800" />
+        <StatPill label="Pre-submission"  value={stats.scrubbed}        color="bg-blue-50 border-blue-200 text-blue-800" />
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-800">
           <TrendingUp className="w-4 h-4" />
           <div>
             <span className="text-2xl font-bold">${stats.totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 0 })}</span>
             <span className="text-xs font-medium ml-1.5">Collected</span>
           </div>
         </div>
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-amber-50 border-amber-200 text-amber-800">
+          <span className="text-2xl font-bold">${stats.pendingRevenue.toLocaleString("en-US", { minimumFractionDigits: 0 })}</span>
+          <span className="text-xs font-medium">Pending</span>
+        </div>
         <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-red-50 border-red-200 text-red-800">
           <span className="text-2xl font-bold">${stats.atRisk.toLocaleString("en-US", { minimumFractionDigits: 0 })}</span>
           <span className="text-xs font-medium">At Risk</span>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-blue-50 border-blue-200 text-blue-800">
+          <span className="text-2xl font-bold">{stats.cleanClaimRate}%</span>
+          <span className="text-xs font-medium">Clean Claim Rate</span>
         </div>
       </div>
 
@@ -150,12 +172,12 @@ export default function Analytics({ claims }: Props) {
           </div>
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
-            <div className="flex gap-1">
-              {(["All", "Approved", "Rejected", "Pending"] as const).map(s => (
+            <div className="flex flex-wrap gap-1">
+              {(["All", ...ALL_STATUSES] as const).map(s => (
                 <button
                   key={s}
-                  onClick={() => setStatusFilter(s)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  onClick={() => setStatusFilter(s as ClaimStatus | "All")}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
                     statusFilter === s
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -233,8 +255,22 @@ export default function Analytics({ claims }: Props) {
                   <td className="px-3 py-3.5">
                     <div>
                       <StatusBadge status={claim.status} />
+                      {claim.denialCode && (
+                        <span className="ml-1.5 text-[10px] font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">{claim.denialCode}</span>
+                      )}
                       {claim.rejectionReason && (
-                        <p className="text-xs text-muted-foreground mt-1">{claim.rejectionReason}</p>
+                        <p className="text-xs text-muted-foreground mt-1 truncate max-w-[200px]">{claim.rejectionReason}</p>
+                      )}
+                      {claim.scrubScore !== undefined && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <div className="w-10 h-1 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${claim.scrubScore >= 85 ? "bg-emerald-500" : claim.scrubScore >= 60 ? "bg-amber-500" : "bg-red-500"}`}
+                              style={{ width: `${claim.scrubScore}%` }}
+                            />
+                          </div>
+                          <span className={`text-[10px] font-bold ${claim.scrubScore >= 85 ? "text-emerald-600" : claim.scrubScore >= 60 ? "text-amber-600" : "text-red-600"}`}>{claim.scrubScore}</span>
+                        </div>
                       )}
                     </div>
                   </td>
@@ -258,9 +294,10 @@ export default function Analytics({ claims }: Props) {
           </table>
         </div>
       </div>
-      {viewingClaim && (
-        <ClaimTimelineModal claim={viewingClaim} onClose={() => setViewingClaim(null)} />
-      )}
+      {viewingClaim && (() => {
+        const live = claims.find(c => c.id === viewingClaim.id) ?? viewingClaim;
+        return <ClaimDetailModal claim={live} onClose={() => setViewingClaim(null)} />;
+      })()}
     </div>
   );
 }

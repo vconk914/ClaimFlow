@@ -1,33 +1,100 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { LayoutDashboard, Stethoscope, BarChart3, Bell, Settings, ChevronRight, Globe, MapPin, CheckCircle2, FlaskConical, ChevronDown, Users } from "lucide-react";
+import { LayoutDashboard, Stethoscope, BarChart3, Bell, Settings, ChevronRight, Globe, MapPin, CheckCircle2, FlaskConical, Users, GitBranch, Activity, Clock, AlertTriangle, DollarSign } from "lucide-react";
 import logoUrl from "/logo.png";
 import Dashboard from "@/pages/Dashboard";
 import ClaimsScrubber from "@/pages/ClaimsScrubber";
 import Analytics from "@/pages/Analytics";
+import ClaimsTimeline from "@/pages/ClaimsTimeline";
 import SettingsPage from "@/pages/Settings";
 import DemoScenarios from "@/pages/DemoScenarios";
 import AIAssistant from "@/components/AIAssistant";
-import { INITIAL_CLAIMS, type Claim } from "@/data/mockData";
 import { RegionalProvider, useRegion } from "@/context/RegionalContext";
 import { STATE_OPTIONS, type StateId } from "@/data/regionalData";
 import type { ScenarioPrefill } from "@/data/demoScenarios";
 import { TeamProvider, useTeam } from "@/context/TeamContext";
 import { TEAM_MEMBERS, ROLE_CONFIGS } from "@/data/teamRoles";
+import { ClaimStoreProvider, useClaimStore } from "@/context/ClaimStore";
+import type { ClaimStatus } from "@/data/mockData";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false } },
 });
 
-type Tab = "dashboard" | "scrubber" | "analytics" | "demo" | "settings";
+type Tab = "dashboard" | "scrubber" | "analytics" | "timeline" | "demo" | "settings";
 
 const NAV_ITEMS: { id: Tab; label: string; icon: any; badge?: string }[] = [
   { id: "dashboard",  label: "Dashboard",       icon: LayoutDashboard },
-  { id: "scrubber",   label: "Claims Scrubber", icon: Stethoscope, badge: "23" },
+  { id: "scrubber",   label: "Claims Scrubber", icon: Stethoscope },
   { id: "analytics",  label: "Analytics",       icon: BarChart3 },
+  { id: "timeline",   label: "Claims Timeline", icon: GitBranch },
   { id: "demo",       label: "Demo Scenarios",  icon: FlaskConical },
 ];
+
+// ── Activity Feed (sidebar) ────────────────────────────────────────────────────
+
+const ACTIVITY_STATUS_COLORS: Partial<Record<ClaimStatus, string>> = {
+  Paid:        "bg-emerald-600",
+  Approved:    "bg-emerald-500",
+  Denied:      "bg-red-500",
+  Corrected:   "bg-sky-500",
+  Resubmitted: "bg-indigo-500",
+  Submitted:   "bg-violet-500",
+  Scrubbed:    "bg-blue-500",
+  Pending:     "bg-amber-500",
+  Draft:       "bg-slate-400",
+};
+
+function ActivityFeed() {
+  const { activityFeed, stats } = useClaimStore();
+  const recent = activityFeed.slice(0, 4);
+
+  return (
+    <div className="px-3 py-3 border-t border-sidebar-border">
+      <div className="flex items-center gap-2 px-2 mb-2">
+        <Activity className="w-3 h-3 text-sidebar-foreground/40" />
+        <p className="text-[10px] font-semibold text-sidebar-foreground/40 uppercase tracking-wide">Live Activity</p>
+      </div>
+      {recent.length === 0 ? (
+        <p className="text-[10px] text-sidebar-foreground/30 px-2 italic">No recent activity</p>
+      ) : (
+        <div className="space-y-1.5">
+          {recent.map(event => {
+            const dot = ACTIVITY_STATUS_COLORS[event.toStatus] ?? "bg-slate-400";
+            return (
+              <div key={event.id} className="flex items-start gap-2 px-2 py-1.5 rounded-lg hover:bg-sidebar-accent transition-colors">
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${dot}`} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-medium text-sidebar-foreground/70 truncate">{event.patient}</p>
+                  <p className="text-[10px] text-sidebar-foreground/40 truncate">→ {event.toStatus}</p>
+                </div>
+                <span className="text-[9px] text-sidebar-foreground/30 shrink-0 mt-0.5">
+                  {new Date(event.timestamp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {/* Live stats mini-bar */}
+      <div className="mt-2 pt-2 border-t border-sidebar-border/50 px-2 flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <AlertTriangle className="w-2.5 h-2.5 text-red-400" />
+          <span className="text-[10px] text-sidebar-foreground/50">{stats.denied} denied</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Clock className="w-2.5 h-2.5 text-amber-400" />
+          <span className="text-[10px] text-sidebar-foreground/50">{stats.pending} pending</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <DollarSign className="w-2.5 h-2.5 text-emerald-400" />
+          <span className="text-[10px] text-sidebar-foreground/50">{stats.paid} paid</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const STATE_DOT_COLORS: Record<StateId, string> = {
   national: "bg-blue-500",
@@ -174,15 +241,9 @@ function UserSwitcher() {
 
 function AppShell() {
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
-  const [claims, setClaims] = useState<Claim[]>(INITIAL_CLAIMS);
   const [prefillData, setPrefillData] = useState<ScenarioPrefill | null>(null);
   const [prefillKey, setPrefillKey] = useState(0);
   const { stateId, config } = useRegion();
-
-  function handleClaimSubmit(claim: Claim) {
-    setClaims(prev => [claim, ...prev]);
-    setActiveTab("analytics");
-  }
 
   function loadScenarioInScrubber(prefill: ScenarioPrefill) {
     setPrefillData(prefill);
@@ -246,6 +307,9 @@ function AppShell() {
             })}
           </nav>
 
+          {/* Activity Feed */}
+          <ActivityFeed />
+
           {/* Bottom section */}
           <div className="px-3 py-4 border-t border-sidebar-border space-y-1">
             <button
@@ -303,8 +367,9 @@ function AppShell() {
           {/* Page content */}
           <main className="flex-1 overflow-y-auto p-6">
             {activeTab === "dashboard"  && <Dashboard />}
-            {activeTab === "scrubber"   && <ClaimsScrubber onSubmit={handleClaimSubmit} prefill={prefillData} prefillKey={prefillKey} />}
-            {activeTab === "analytics"  && <Analytics claims={claims} />}
+            {activeTab === "scrubber"   && <ClaimsScrubber onAfterSubmit={() => setActiveTab("timeline")} prefill={prefillData} prefillKey={prefillKey} />}
+            {activeTab === "analytics"  && <Analytics />}
+            {activeTab === "timeline"   && <ClaimsTimeline />}
             {activeTab === "demo"       && <DemoScenarios onLoadInScrubber={loadScenarioInScrubber} />}
             {activeTab === "settings"   && <SettingsPage />}
           </main>
@@ -321,7 +386,9 @@ function App() {
       <TooltipProvider>
         <RegionalProvider>
           <TeamProvider>
-            <AppShell />
+            <ClaimStoreProvider>
+              <AppShell />
+            </ClaimStoreProvider>
           </TeamProvider>
         </RegionalProvider>
       </TooltipProvider>

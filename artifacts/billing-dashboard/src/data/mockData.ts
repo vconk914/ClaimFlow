@@ -1,4 +1,21 @@
-export type ClaimStatus = "Approved" | "Rejected" | "Pending";
+export type ClaimStatus =
+  | "Draft"
+  | "Scrubbed"
+  | "Submitted"
+  | "Pending"
+  | "Denied"
+  | "Corrected"
+  | "Resubmitted"
+  | "Approved"
+  | "Paid";
+
+export interface TimelineEvent {
+  id: string;
+  status: ClaimStatus;
+  timestamp: string;
+  note: string;
+  actor?: string;
+}
 
 export interface Claim {
   id: string;
@@ -6,30 +23,306 @@ export interface Claim {
   dob: string;
   insuranceId: string;
   cpt: string;
+  cptDescription?: string;
   icd10: string;
+  icd10Description?: string;
   payer: string;
+  specialty?: string;
   amount: number;
   status: ClaimStatus;
   submittedAt: string;
+  createdAt?: string;
   rejectionReason?: string;
+  denialCode?: string;
+  scrubScore?: number;
+  scrubErrorCount?: number;
+  scrubWarningCount?: number;
+  timeline?: TimelineEvent[];
 }
 
 export const INITIAL_CLAIMS: Claim[] = [
-  { id: "CLM-2024-001", patient: "Robert J. Hadley",      dob: "1951-03-14", insuranceId: "MCR-4821039", cpt: "99214", icd10: "N40.1",  payer: "Medicare",     amount: 220.00,  status: "Approved", submittedAt: "2024-05-20T08:14:00Z" },
-  { id: "CLM-2024-002", patient: "Marcus D. Thornton",    dob: "1960-07-22", insuranceId: "BCB-9932871", cpt: "52000", icd10: "R31.0",  payer: "BlueCross",    amount: 380.00,  status: "Approved", submittedAt: "2024-05-20T09:30:00Z" },
-  { id: "CLM-2024-003", patient: "Vincent K. Esposito",   dob: "1948-11-03", insuranceId: "MCR-7761234", cpt: "84153", icd10: "Z00.00", payer: "Medicare",     amount: 52.00,   status: "Rejected", submittedAt: "2024-05-21T10:05:00Z", rejectionReason: "Missing Prior Auth" },
-  { id: "CLM-2024-004", patient: "Earl T. Patterson",     dob: "1963-01-30", insuranceId: "MCR-5548907", cpt: "50590", icd10: "N20.0",  payer: "Medicare",     amount: 3200.00, status: "Approved", submittedAt: "2024-05-21T11:22:00Z" },
-  { id: "CLM-2024-005", patient: "Harold S. Kimura",      dob: "1957-06-18", insuranceId: "AET-3310045", cpt: "55700", icd10: "N40.1",  payer: "Aetna",        amount: 890.00,  status: "Pending",  submittedAt: "2024-05-22T08:55:00Z" },
-  { id: "CLM-2024-006", patient: "George M. Nakamura",    dob: "1948-09-05", insuranceId: "MCR-1192038", cpt: "52601", icd10: "N40.1",  payer: "Medicare",     amount: 2850.00, status: "Rejected", submittedAt: "2024-05-22T13:40:00Z", rejectionReason: "Missing Modifier" },
-  { id: "CLM-2024-007", patient: "Dennis R. Walcott",     dob: "1955-04-12", insuranceId: "BCB-8824511", cpt: "51726", icd10: "N39.46", payer: "BlueCross",    amount: 580.00,  status: "Approved", submittedAt: "2024-05-23T09:15:00Z" },
-  { id: "CLM-2024-008", patient: "Thomas B. Rafferty",    dob: "1968-12-28", insuranceId: "UHC-9903312", cpt: "52332", icd10: "N20.1",  payer: "UnitedHealth", amount: 1240.00, status: "Pending",  submittedAt: "2024-05-23T14:20:00Z" },
-  { id: "CLM-2024-009", patient: "Arthur J. Pemberton",   dob: "1955-08-17", insuranceId: "AET-4467821", cpt: "99213", icd10: "N41.1",  payer: "Aetna",        amount: 145.00,  status: "Approved", submittedAt: "2024-05-24T10:00:00Z" },
-  { id: "CLM-2024-010", patient: "Frank D. Gustavsson",   dob: "1950-02-07", insuranceId: "MCR-7712398", cpt: "52204", icd10: "R31.0",  payer: "Medicare",     amount: 780.00,  status: "Rejected", submittedAt: "2024-05-24T11:45:00Z", rejectionReason: "Missing Prior Auth" },
-  { id: "CLM-2024-011", patient: "Larry W. McIntyre",     dob: "1958-05-29", insuranceId: "BCB-3319204", cpt: "99214", icd10: "C61",    payer: "BlueCross",    amount: 220.00,  status: "Approved", submittedAt: "2024-05-25T08:30:00Z" },
-  { id: "CLM-2024-012", patient: "Bernard K. Walsh",      dob: "1945-10-14", insuranceId: "MCD-8821047", cpt: "51702", icd10: "R33.9",  payer: "Medicaid",     amount: 145.00,  status: "Pending",  submittedAt: "2024-05-25T15:10:00Z" },
-  { id: "CLM-2024-013", patient: "Douglas P. Mercer",     dob: "1960-03-21", insuranceId: "AET-6643890", cpt: "74177", icd10: "N20.0",  payer: "Aetna",        amount: 890.00,  status: "Rejected", submittedAt: "2024-05-26T09:55:00Z", rejectionReason: "Missing Prior Auth" },
-  { id: "CLM-2024-014", patient: "Roger E. Castellano",   dob: "1975-07-09", insuranceId: "MCD-1120938", cpt: "99213", icd10: "N39.0",  payer: "Medicaid",     amount: 145.00,  status: "Approved", submittedAt: "2024-05-26T13:00:00Z" },
-  { id: "CLM-2024-015", patient: "Walter C. Brinkworth",  dob: "1962-01-25", insuranceId: "UHC-5510023", cpt: "52000", icd10: "N40.1",  payer: "UnitedHealth", amount: 380.00,  status: "Pending",  submittedAt: "2024-05-27T10:30:00Z" },
+  {
+    id: "CLM-2024-001", patient: "Robert J. Hadley", dob: "1951-03-14", insuranceId: "MCR-4821039",
+    cpt: "99214", cptDescription: "Office visit, established patient, mod complexity",
+    icd10: "N40.1", icd10Description: "Benign prostatic hyperplasia with LUTS",
+    payer: "Medicare", specialty: "BPH / LUTS Management", amount: 220.00,
+    status: "Paid", submittedAt: "2024-05-20T08:14:00Z", createdAt: "2024-05-18T09:00:00Z",
+    scrubScore: 92, scrubErrorCount: 0, scrubWarningCount: 0,
+    timeline: [
+      { id: "e1a", status: "Scrubbed",  timestamp: "2024-05-18T09:10:00Z", note: "AI scrub passed. Health score 92/100. No errors.", actor: "ClaimFlow AI" },
+      { id: "e1b", status: "Submitted", timestamp: "2024-05-20T08:14:00Z", note: "837P submitted via Availity. ACK-2024-00441.", actor: "Marcus Torres" },
+      { id: "e1c", status: "Pending",   timestamp: "2024-05-20T11:00:00Z", note: "Medicare entered standard adjudication queue." },
+      { id: "e1d", status: "Approved",  timestamp: "2024-05-28T14:30:00Z", note: "Approved. ERA/835 received. Contracted rate applied.", actor: "Medicare" },
+      { id: "e1e", status: "Paid",      timestamp: "2024-06-02T08:00:00Z", note: "EFT deposited $171.60. Patient balance $48.40.", actor: "Medicare EFT" },
+    ],
+  },
+  {
+    id: "CLM-2024-002", patient: "Marcus D. Thornton", dob: "1960-07-22", insuranceId: "BCB-9932871",
+    cpt: "52000", cptDescription: "Cystoscopy, diagnostic",
+    icd10: "R31.0", icd10Description: "Gross hematuria",
+    payer: "BlueCross", specialty: "Hematuria Workup", amount: 380.00,
+    status: "Approved", submittedAt: "2024-05-20T09:30:00Z", createdAt: "2024-05-19T10:00:00Z",
+    scrubScore: 89, scrubErrorCount: 0, scrubWarningCount: 1,
+    timeline: [
+      { id: "e2a", status: "Scrubbed",  timestamp: "2024-05-19T10:05:00Z", note: "AI scrub: 1 warning (modifier -59 recommended). Score 89/100.", actor: "ClaimFlow AI" },
+      { id: "e2b", status: "Submitted", timestamp: "2024-05-20T09:30:00Z", note: "837P submitted. ACK-2024-00442.", actor: "Anita Patel" },
+      { id: "e2c", status: "Pending",   timestamp: "2024-05-20T12:00:00Z", note: "BlueCross entered adjudication." },
+      { id: "e2d", status: "Approved",  timestamp: "2024-06-01T10:00:00Z", note: "Approved. ERA received.", actor: "BlueCross" },
+    ],
+  },
+  {
+    id: "CLM-2024-003", patient: "Vincent K. Esposito", dob: "1948-11-03", insuranceId: "MCR-7761234",
+    cpt: "84153", cptDescription: "PSA total",
+    icd10: "Z00.00", icd10Description: "Encounter for general adult medical examination",
+    payer: "Medicare", specialty: "Prostate Cancer Screening", amount: 52.00,
+    status: "Denied", submittedAt: "2024-05-21T10:05:00Z", createdAt: "2024-05-20T08:00:00Z",
+    rejectionReason: "CO-50: Diagnosis not covered for this service", denialCode: "CO-50",
+    scrubScore: 38, scrubErrorCount: 2, scrubWarningCount: 1,
+    timeline: [
+      { id: "e3a", status: "Scrubbed",  timestamp: "2024-05-20T08:10:00Z", note: "AI scrub flagged 2 errors: Z00.00 invalid for PSA billing. Use Z12.5 + G0103. Score 38/100.", actor: "ClaimFlow AI" },
+      { id: "e3b", status: "Submitted", timestamp: "2024-05-21T10:05:00Z", note: "Submitted with errors unresolved. ACK-2024-00528.", actor: "Marcus Torres" },
+      { id: "e3c", status: "Pending",   timestamp: "2024-05-21T12:00:00Z", note: "Medicare entered adjudication." },
+      { id: "e3d", status: "Denied",    timestamp: "2024-06-03T09:00:00Z", note: "CO-50: PSA billed with wellness diagnosis. Use G0103 for Medicare screening.", actor: "Medicare" },
+    ],
+  },
+  {
+    id: "CLM-2024-004", patient: "Earl T. Patterson", dob: "1963-01-30", insuranceId: "MCR-5548907",
+    cpt: "50590", cptDescription: "Extracorporeal shock wave lithotripsy (ESWL)",
+    icd10: "N20.0", icd10Description: "Calculus of kidney",
+    payer: "Medicare", specialty: "Kidney Stone Care", amount: 3200.00,
+    status: "Paid", submittedAt: "2024-05-21T11:22:00Z", createdAt: "2024-05-20T07:30:00Z",
+    scrubScore: 95, scrubErrorCount: 0, scrubWarningCount: 0,
+    timeline: [
+      { id: "e4a", status: "Scrubbed",  timestamp: "2024-05-20T07:35:00Z", note: "AI scrub passed. All checks clear. Score 95/100.", actor: "ClaimFlow AI" },
+      { id: "e4b", status: "Submitted", timestamp: "2024-05-21T11:22:00Z", note: "837P submitted. ACK-2024-00529.", actor: "Anita Patel" },
+      { id: "e4c", status: "Pending",   timestamp: "2024-05-21T14:00:00Z", note: "Medicare adjudication queue." },
+      { id: "e4d", status: "Approved",  timestamp: "2024-06-05T10:00:00Z", note: "Approved. ERA received.", actor: "Medicare" },
+      { id: "e4e", status: "Paid",      timestamp: "2024-06-10T08:00:00Z", note: "EFT deposited $2,496.00. Patient balance $704.00.", actor: "Medicare EFT" },
+    ],
+  },
+  {
+    id: "CLM-2024-005", patient: "Harold S. Kimura", dob: "1957-06-18", insuranceId: "AET-3310045",
+    cpt: "55700", cptDescription: "Prostate biopsy, needle",
+    icd10: "N40.1", icd10Description: "Benign prostatic hyperplasia with LUTS",
+    payer: "Aetna", specialty: "BPH / LUTS Management", amount: 890.00,
+    status: "Pending", submittedAt: "2024-05-22T08:55:00Z", createdAt: "2024-05-21T09:00:00Z",
+    scrubScore: 74, scrubErrorCount: 0, scrubWarningCount: 1,
+    timeline: [
+      { id: "e5a", status: "Scrubbed",  timestamp: "2024-05-21T09:05:00Z", note: "1 warning: D29.1 recommended alongside N40.1. Score 74/100.", actor: "ClaimFlow AI" },
+      { id: "e5b", status: "Submitted", timestamp: "2024-05-22T08:55:00Z", note: "Submitted. ACK-2024-00530.", actor: "Marcus Torres" },
+      { id: "e5c", status: "Pending",   timestamp: "2024-05-22T11:00:00Z", note: "Aetna processing. Est. adjudication: 14–21 days." },
+    ],
+  },
+  {
+    id: "CLM-2024-006", patient: "George M. Nakamura", dob: "1948-09-05", insuranceId: "MCR-1192038",
+    cpt: "52601", cptDescription: "TURP, complete (electrosurgical)",
+    icd10: "N40.1", icd10Description: "Benign prostatic hyperplasia with LUTS",
+    payer: "Medicare", specialty: "BPH / LUTS Management", amount: 2850.00,
+    status: "Corrected", submittedAt: "2024-05-22T13:40:00Z", createdAt: "2024-05-21T11:00:00Z",
+    rejectionReason: "CO-4: Modifier invalid for service billed", denialCode: "CO-4",
+    scrubScore: 42, scrubErrorCount: 1, scrubWarningCount: 2,
+    timeline: [
+      { id: "e6a", status: "Scrubbed",  timestamp: "2024-05-21T11:10:00Z", note: "AI scrub: 1 error — modifier -51 applied incorrectly to TURP. Score 42/100.", actor: "ClaimFlow AI" },
+      { id: "e6b", status: "Submitted", timestamp: "2024-05-22T13:40:00Z", note: "Submitted with unresolved modifier issue.", actor: "Marcus Torres" },
+      { id: "e6c", status: "Pending",   timestamp: "2024-05-22T15:00:00Z", note: "Medicare adjudication queue." },
+      { id: "e6d", status: "Denied",    timestamp: "2024-06-04T10:00:00Z", note: "CO-4: Modifier -51 is invalid with TURP CPT 52601.", actor: "Medicare" },
+      { id: "e6e", status: "Corrected", timestamp: "2024-06-09T14:00:00Z", note: "Modifier removed. Documentation reviewed and corrected.", actor: "Anita Patel" },
+    ],
+  },
+  {
+    id: "CLM-2024-007", patient: "Dennis R. Walcott", dob: "1955-04-12", insuranceId: "BCB-8824511",
+    cpt: "51726", cptDescription: "Complex cystometrogram with voiding",
+    icd10: "N39.46", icd10Description: "Mixed incontinence",
+    payer: "BlueCross", specialty: "Urodynamics / Incontinence", amount: 580.00,
+    status: "Paid", submittedAt: "2024-05-23T09:15:00Z", createdAt: "2024-05-22T08:00:00Z",
+    scrubScore: 91, scrubErrorCount: 0, scrubWarningCount: 0,
+    timeline: [
+      { id: "e7a", status: "Scrubbed",  timestamp: "2024-05-22T08:10:00Z", note: "AI scrub passed. Score 91/100.", actor: "ClaimFlow AI" },
+      { id: "e7b", status: "Submitted", timestamp: "2024-05-23T09:15:00Z", note: "837P submitted. ACK-2024-00531.", actor: "Marcus Torres" },
+      { id: "e7c", status: "Pending",   timestamp: "2024-05-23T12:00:00Z", note: "BlueCross adjudication." },
+      { id: "e7d", status: "Approved",  timestamp: "2024-06-03T11:00:00Z", note: "Approved. ERA received.", actor: "BlueCross" },
+      { id: "e7e", status: "Paid",      timestamp: "2024-06-08T08:00:00Z", note: "EFT deposited $452.40. Patient balance $127.60.", actor: "BlueCross EFT" },
+    ],
+  },
+  {
+    id: "CLM-2024-008", patient: "Thomas B. Rafferty", dob: "1968-12-28", insuranceId: "UHC-9903312",
+    cpt: "52332", cptDescription: "Cystoscopy with insertion of ureteral stent",
+    icd10: "N20.1", icd10Description: "Calculus of ureter",
+    payer: "UnitedHealth", specialty: "Kidney Stone Care", amount: 1240.00,
+    status: "Pending", submittedAt: "2024-05-23T14:20:00Z", createdAt: "2024-05-22T10:00:00Z",
+    scrubScore: 82, scrubErrorCount: 0, scrubWarningCount: 1,
+    timeline: [
+      { id: "e8a", status: "Scrubbed",  timestamp: "2024-05-22T10:10:00Z", note: "1 warning: UHC may require prior auth for stent insertion. Score 82/100.", actor: "ClaimFlow AI" },
+      { id: "e8b", status: "Submitted", timestamp: "2024-05-23T14:20:00Z", note: "Submitted. ACK-2024-00532.", actor: "Anita Patel" },
+      { id: "e8c", status: "Pending",   timestamp: "2024-05-23T16:00:00Z", note: "UHC processing. Auth status under review." },
+    ],
+  },
+  {
+    id: "CLM-2024-009", patient: "Arthur J. Pemberton", dob: "1955-08-17", insuranceId: "AET-4467821",
+    cpt: "99213", cptDescription: "Office visit, established patient, low complexity",
+    icd10: "N41.1", icd10Description: "Chronic prostatitis",
+    payer: "Aetna", specialty: "BPH / LUTS Management", amount: 145.00,
+    status: "Approved", submittedAt: "2024-05-24T10:00:00Z", createdAt: "2024-05-23T09:00:00Z",
+    scrubScore: 88, scrubErrorCount: 0, scrubWarningCount: 0,
+    timeline: [
+      { id: "e9a", status: "Scrubbed",  timestamp: "2024-05-23T09:05:00Z", note: "AI scrub passed. Score 88/100.", actor: "ClaimFlow AI" },
+      { id: "e9b", status: "Submitted", timestamp: "2024-05-24T10:00:00Z", note: "Submitted. ACK-2024-00533.", actor: "Marcus Torres" },
+      { id: "e9c", status: "Pending",   timestamp: "2024-05-24T12:00:00Z", note: "Aetna adjudication." },
+      { id: "e9d", status: "Approved",  timestamp: "2024-06-01T14:00:00Z", note: "Approved. ERA received.", actor: "Aetna" },
+    ],
+  },
+  {
+    id: "CLM-2024-010", patient: "Frank D. Gustavsson", dob: "1950-02-07", insuranceId: "MCR-7712398",
+    cpt: "52204", cptDescription: "Cystoscopy with biopsy",
+    icd10: "R31.0", icd10Description: "Gross hematuria",
+    payer: "Medicare", specialty: "Hematuria Workup", amount: 780.00,
+    status: "Resubmitted", submittedAt: "2024-05-24T11:45:00Z", createdAt: "2024-05-23T08:00:00Z",
+    rejectionReason: "CO-197: Prior authorization required", denialCode: "CO-197",
+    scrubScore: 55, scrubErrorCount: 1, scrubWarningCount: 0,
+    timeline: [
+      { id: "e10a", status: "Scrubbed",    timestamp: "2024-05-23T08:10:00Z", note: "1 error: Medicare auth required for cystoscopy with biopsy. Score 55/100.", actor: "ClaimFlow AI" },
+      { id: "e10b", status: "Submitted",   timestamp: "2024-05-24T11:45:00Z", note: "Submitted without obtaining auth. ACK-2024-00534.", actor: "Marcus Torres" },
+      { id: "e10c", status: "Pending",     timestamp: "2024-05-24T14:00:00Z", note: "Medicare adjudication." },
+      { id: "e10d", status: "Denied",      timestamp: "2024-06-05T09:00:00Z", note: "CO-197: No prior auth on file. Appeal window: 90 days.", actor: "Medicare" },
+      { id: "e10e", status: "Corrected",   timestamp: "2024-06-10T11:00:00Z", note: "Auth retroactively obtained. Documentation corrected.", actor: "Anita Patel" },
+      { id: "e10f", status: "Resubmitted", timestamp: "2024-06-11T09:00:00Z", note: "Resubmitted with CCI 7 and auth reference number.", actor: "Anita Patel" },
+    ],
+  },
+  {
+    id: "CLM-2024-011", patient: "Larry W. McIntyre", dob: "1958-05-29", insuranceId: "BCB-3319204",
+    cpt: "99214", cptDescription: "Office visit, established patient, mod complexity",
+    icd10: "C61", icd10Description: "Malignant neoplasm of prostate",
+    payer: "BlueCross", specialty: "Prostate Cancer Screening", amount: 220.00,
+    status: "Paid", submittedAt: "2024-05-25T08:30:00Z", createdAt: "2024-05-24T09:00:00Z",
+    scrubScore: 93, scrubErrorCount: 0, scrubWarningCount: 0,
+    timeline: [
+      { id: "e11a", status: "Scrubbed",  timestamp: "2024-05-24T09:05:00Z", note: "AI scrub passed. Score 93/100.", actor: "ClaimFlow AI" },
+      { id: "e11b", status: "Submitted", timestamp: "2024-05-25T08:30:00Z", note: "837P submitted. ACK-2024-00535.", actor: "Marcus Torres" },
+      { id: "e11c", status: "Pending",   timestamp: "2024-05-25T11:00:00Z", note: "BlueCross adjudication." },
+      { id: "e11d", status: "Approved",  timestamp: "2024-06-04T10:00:00Z", note: "Approved. ERA received.", actor: "BlueCross" },
+      { id: "e11e", status: "Paid",      timestamp: "2024-06-09T08:00:00Z", note: "EFT deposited $171.60. Patient balance $48.40.", actor: "BlueCross EFT" },
+    ],
+  },
+  {
+    id: "CLM-2024-012", patient: "Bernard K. Walsh", dob: "1945-10-14", insuranceId: "MCD-8821047",
+    cpt: "51702", cptDescription: "Insertion of temporary indwelling bladder catheter",
+    icd10: "R33.9", icd10Description: "Retention of urine, unspecified",
+    payer: "Medicaid", specialty: "Urodynamics / Incontinence", amount: 145.00,
+    status: "Submitted", submittedAt: "2024-05-25T15:10:00Z", createdAt: "2024-05-24T12:00:00Z",
+    scrubScore: 78, scrubErrorCount: 0, scrubWarningCount: 1,
+    timeline: [
+      { id: "e12a", status: "Scrubbed",  timestamp: "2024-05-24T12:10:00Z", note: "1 warning: Medicaid may require medical necessity documentation. Score 78/100.", actor: "ClaimFlow AI" },
+      { id: "e12b", status: "Submitted", timestamp: "2024-05-25T15:10:00Z", note: "Submitted. ACK-2024-00536.", actor: "Marcus Torres" },
+    ],
+  },
+  {
+    id: "CLM-2024-013", patient: "Douglas P. Mercer", dob: "1960-03-21", insuranceId: "AET-6643890",
+    cpt: "74177", cptDescription: "CT urography with contrast",
+    icd10: "N20.0", icd10Description: "Calculus of kidney",
+    payer: "Aetna", specialty: "Kidney Stone Care", amount: 890.00,
+    status: "Denied", submittedAt: "2024-05-26T09:55:00Z", createdAt: "2024-05-25T08:00:00Z",
+    rejectionReason: "CO-197: Prior authorization required by Aetna for CT urography", denialCode: "CO-197",
+    scrubScore: 35, scrubErrorCount: 2, scrubWarningCount: 1,
+    timeline: [
+      { id: "e13a", status: "Scrubbed",  timestamp: "2024-05-25T08:10:00Z", note: "2 errors: Aetna requires prior auth for CT urography; auth number missing. Score 35/100.", actor: "ClaimFlow AI" },
+      { id: "e13b", status: "Submitted", timestamp: "2024-05-26T09:55:00Z", note: "Submitted without auth. ACK-2024-00537.", actor: "Marcus Torres" },
+      { id: "e13c", status: "Pending",   timestamp: "2024-05-26T12:00:00Z", note: "Aetna adjudication." },
+      { id: "e13d", status: "Denied",    timestamp: "2024-06-06T10:00:00Z", note: "CO-197: No prior authorization obtained. Appeal: 90 days.", actor: "Aetna" },
+    ],
+  },
+  {
+    id: "CLM-2024-014", patient: "Roger E. Castellano", dob: "1975-07-09", insuranceId: "MCD-1120938",
+    cpt: "99213", cptDescription: "Office visit, established patient, low complexity",
+    icd10: "N39.0", icd10Description: "Urinary tract infection, unspecified",
+    payer: "Medicaid", specialty: "BPH / LUTS Management", amount: 145.00,
+    status: "Approved", submittedAt: "2024-05-26T13:00:00Z", createdAt: "2024-05-25T10:00:00Z",
+    scrubScore: 86, scrubErrorCount: 0, scrubWarningCount: 0,
+    timeline: [
+      { id: "e14a", status: "Scrubbed",  timestamp: "2024-05-25T10:05:00Z", note: "AI scrub passed. Score 86/100.", actor: "ClaimFlow AI" },
+      { id: "e14b", status: "Submitted", timestamp: "2024-05-26T13:00:00Z", note: "Submitted. ACK-2024-00538.", actor: "Anita Patel" },
+      { id: "e14c", status: "Pending",   timestamp: "2024-05-26T15:00:00Z", note: "Medicaid adjudication." },
+      { id: "e14d", status: "Approved",  timestamp: "2024-06-04T11:00:00Z", note: "Approved. ERA received.", actor: "Medicaid" },
+    ],
+  },
+  {
+    id: "CLM-2024-015", patient: "Walter C. Brinkworth", dob: "1962-01-25", insuranceId: "UHC-5510023",
+    cpt: "52000", cptDescription: "Cystoscopy, diagnostic",
+    icd10: "N40.1", icd10Description: "Benign prostatic hyperplasia with LUTS",
+    payer: "UnitedHealth", specialty: "Hematuria Workup", amount: 380.00,
+    status: "Scrubbed", submittedAt: "2024-05-27T10:30:00Z", createdAt: "2024-05-27T09:00:00Z",
+    scrubScore: 71, scrubErrorCount: 0, scrubWarningCount: 2,
+    timeline: [
+      { id: "e15a", status: "Scrubbed", timestamp: "2024-05-27T09:05:00Z", note: "2 warnings: N40.1 is suboptimal for cystoscopy (prefer R31.0); UHC may require auth. Score 71/100.", actor: "ClaimFlow AI" },
+    ],
+  },
+  {
+    id: "CLM-2024-016", patient: "Norman A. Driscoll", dob: "1953-04-17", insuranceId: "MCR-3381920",
+    cpt: "55866", cptDescription: "Laparoscopic radical prostatectomy",
+    icd10: "C61", icd10Description: "Malignant neoplasm of prostate",
+    payer: "Medicare", specialty: "Prostate Cancer Screening", amount: 6800.00,
+    status: "Approved", submittedAt: "2024-05-27T11:00:00Z", createdAt: "2024-05-26T08:00:00Z",
+    scrubScore: 97, scrubErrorCount: 0, scrubWarningCount: 0,
+    timeline: [
+      { id: "e16a", status: "Scrubbed",  timestamp: "2024-05-26T08:10:00Z", note: "AI scrub passed. All criteria met. Score 97/100.", actor: "ClaimFlow AI" },
+      { id: "e16b", status: "Submitted", timestamp: "2024-05-27T11:00:00Z", note: "837P submitted. ACK-2024-00539.", actor: "Anita Patel" },
+      { id: "e16c", status: "Pending",   timestamp: "2024-05-27T14:00:00Z", note: "Medicare medical review — high-dollar claim." },
+      { id: "e16d", status: "Approved",  timestamp: "2024-06-10T09:00:00Z", note: "Approved after medical review. ERA received.", actor: "Medicare" },
+    ],
+  },
+  {
+    id: "CLM-2024-017", patient: "Agnes M. Hollingsworth", dob: "1958-09-22", insuranceId: "BCB-2291043",
+    cpt: "51840", cptDescription: "Anterior vesicourethropexy (MMK/Burch procedure)",
+    icd10: "N39.3", icd10Description: "Stress incontinence (female) (male)",
+    payer: "BlueCross", specialty: "Urodynamics / Incontinence", amount: 4200.00,
+    status: "Resubmitted", submittedAt: "2024-05-28T09:00:00Z", createdAt: "2024-05-27T10:00:00Z",
+    rejectionReason: "CO-11: Diagnosis code inconsistent with procedure billed", denialCode: "CO-11",
+    scrubScore: 48, scrubErrorCount: 1, scrubWarningCount: 1,
+    timeline: [
+      { id: "e17a", status: "Scrubbed",    timestamp: "2024-05-27T10:10:00Z", note: "1 error: N39.3 doesn't map cleanly to Burch — confirm incontinence type. Score 48/100.", actor: "ClaimFlow AI" },
+      { id: "e17b", status: "Submitted",   timestamp: "2024-05-28T09:00:00Z", note: "Submitted. ACK-2024-00540.", actor: "Marcus Torres" },
+      { id: "e17c", status: "Pending",     timestamp: "2024-05-28T11:00:00Z", note: "BlueCross adjudication." },
+      { id: "e17d", status: "Denied",      timestamp: "2024-06-08T10:00:00Z", note: "CO-11: Diagnosis not consistent with procedure. Submit with N39.41 or N39.46.", actor: "BlueCross" },
+      { id: "e17e", status: "Corrected",   timestamp: "2024-06-12T14:00:00Z", note: "ICD-10 corrected to N39.41 (mixed incontinence). Documentation updated.", actor: "Anita Patel" },
+      { id: "e17f", status: "Resubmitted", timestamp: "2024-06-13T09:30:00Z", note: "Resubmitted with CCI 7. ACK-2024-00601.", actor: "Anita Patel" },
+    ],
+  },
+  {
+    id: "CLM-2024-018", patient: "Clarence T. Turvey", dob: "1961-06-30", insuranceId: "AET-7723019",
+    cpt: "50080", cptDescription: "Percutaneous nephrostolithotomy (PCNL), simple",
+    icd10: "N20.0", icd10Description: "Calculus of kidney",
+    payer: "Aetna", specialty: "Kidney Stone Care", amount: 5400.00,
+    status: "Pending", submittedAt: "2024-05-28T14:00:00Z", createdAt: "2024-05-27T11:00:00Z",
+    scrubScore: 84, scrubErrorCount: 0, scrubWarningCount: 1,
+    timeline: [
+      { id: "e18a", status: "Scrubbed",  timestamp: "2024-05-27T11:10:00Z", note: "1 warning: Aetna requires auth for PCNL — verify auth number. Score 84/100.", actor: "ClaimFlow AI" },
+      { id: "e18b", status: "Submitted", timestamp: "2024-05-28T14:00:00Z", note: "Submitted with auth reference AUTH-2024-7731. ACK-2024-00541.", actor: "Marcus Torres" },
+      { id: "e18c", status: "Pending",   timestamp: "2024-05-28T16:00:00Z", note: "Aetna processing. Auth verified." },
+    ],
+  },
+  {
+    id: "CLM-2024-019", patient: "Miriam L. Goldstein", dob: "1966-11-14", insuranceId: "UHC-4401298",
+    cpt: "51798", cptDescription: "Ultrasound, bladder capacity measurement",
+    icd10: "R33.9", icd10Description: "Retention of urine, unspecified",
+    payer: "UnitedHealth", specialty: "Urodynamics / Incontinence", amount: 185.00,
+    status: "Approved", submittedAt: "2024-05-29T09:15:00Z", createdAt: "2024-05-28T08:00:00Z",
+    scrubScore: 90, scrubErrorCount: 0, scrubWarningCount: 0,
+    timeline: [
+      { id: "e19a", status: "Scrubbed",  timestamp: "2024-05-28T08:05:00Z", note: "AI scrub passed. Score 90/100.", actor: "ClaimFlow AI" },
+      { id: "e19b", status: "Submitted", timestamp: "2024-05-29T09:15:00Z", note: "Submitted. ACK-2024-00542.", actor: "Anita Patel" },
+      { id: "e19c", status: "Pending",   timestamp: "2024-05-29T11:00:00Z", note: "UHC adjudication." },
+      { id: "e19d", status: "Approved",  timestamp: "2024-06-07T10:00:00Z", note: "Approved. ERA received.", actor: "UHC" },
+    ],
+  },
+  {
+    id: "CLM-2024-020", patient: "Wallace A. Pemberton", dob: "1949-03-08", insuranceId: "MCR-9910283",
+    cpt: "52310", cptDescription: "Cystoscopy with removal of foreign body",
+    icd10: "N21.0", icd10Description: "Calculus in bladder",
+    payer: "Medicare", specialty: "Kidney Stone Care", amount: 920.00,
+    status: "Draft", submittedAt: "2024-05-29T14:00:00Z", createdAt: "2024-05-29T13:30:00Z",
+    timeline: [
+      { id: "e20a", status: "Draft", timestamp: "2024-05-29T13:30:00Z", note: "Claim entered into system from encounter documentation.", actor: "Marcus Torres" },
+    ],
+  },
 ];
 
 export const DENIAL_REASONS = [

@@ -11,13 +11,14 @@ import {
 import type { Claim } from "@/data/mockData";
 import type { ScenarioPrefill } from "@/data/demoScenarios";
 import { computeHealthScore, DENIAL_RISK_CONFIG, AUTH_RISK_CONFIG } from "@/data/claimHealthScore";
+import { useClaimStore } from "@/context/ClaimStore";
 
 interface ClaimsFormData {
   patient: string; dob: string; insuranceId: string; cpt: string; icd10: string;
 }
 
 interface Props {
-  onSubmit: (claim: Claim) => void;
+  onAfterSubmit: () => void;
   prefill?: ScenarioPrefill | null;
   prefillKey?: number;
 }
@@ -369,8 +370,9 @@ function useLiveCompat(cpt: string, icd10: string) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function ClaimsScrubber({ onSubmit, prefill, prefillKey }: Props) {
+export default function ClaimsScrubber({ onAfterSubmit, prefill, prefillKey }: Props) {
   const { config, stateId } = useRegion();
+  const { addClaim, updateStatus } = useClaimStore();
   const regionalPayers = config.payers.map(p => p.name);
   const payerList = regionalPayers.length > 0 ? [...regionalPayers, "Other"] : FALLBACK_PAYERS;
 
@@ -487,16 +489,59 @@ export default function ClaimsScrubber({ onSubmit, prefill, prefillKey }: Props)
 
   function handleSubmit() {
     if (scrubResult?.some(e => e.severity === "error")) return;
-    onSubmit({
-      id: `CLM-2024-${String(Math.floor(Math.random() * 900) + 100).padStart(3, "0")}`,
-      patient: form.patient, dob: form.dob, insuranceId: form.insuranceId,
-      cpt: form.cpt.trim(), icd10: form.icd10.trim().toUpperCase(),
-      payer, amount: parseFloat(amount) || 145.00,
-      status: "Pending", submittedAt: new Date().toISOString(),
-    });
+    const now = new Date().toISOString();
+    const claimId = `CLM-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+    const cptInfo = CPT_CODES[form.cpt.trim()];
+    const icd10Info = ICD10_CODES[form.icd10.trim().toUpperCase()];
+    const scrubScoreVal = healthScore?.overall ?? 75;
+    const errCount = errors.length;
+    const warnCount = warnings.length;
+
+    const claim: Claim = {
+      id: claimId,
+      patient: form.patient || "Unknown Patient",
+      dob: form.dob,
+      insuranceId: form.insuranceId,
+      cpt: form.cpt.trim(),
+      cptDescription: cptInfo?.description,
+      icd10: form.icd10.trim().toUpperCase(),
+      icd10Description: icd10Info?.description,
+      payer,
+      specialty: specialty?.label,
+      amount: parseFloat(amount) || 145.00,
+      status: "Scrubbed",
+      submittedAt: now,
+      createdAt: now,
+      scrubScore: scrubScoreVal,
+      scrubErrorCount: errCount,
+      scrubWarningCount: warnCount,
+      timeline: [
+        {
+          id: `evt-${Date.now()}-scrub`,
+          status: "Scrubbed",
+          timestamp: now,
+          note: `AI scrub complete. Score ${scrubScoreVal}/100. ${errCount} error${errCount !== 1 ? "s" : ""}, ${warnCount} warning${warnCount !== 1 ? "s" : ""}.`,
+          actor: "ClaimFlow AI",
+        },
+      ],
+    };
+
+    addClaim(claim);
+
+    setTimeout(() => {
+      updateStatus(claimId, "Submitted", "837P submitted via Availity clearinghouse.", "ClaimFlow");
+      setTimeout(() => {
+        updateStatus(claimId, "Pending", `${payer} entered standard adjudication queue.`);
+      }, 1500);
+    }, 800);
+
     setSubmitted(true);
     setForm({ patient: "", dob: "", insuranceId: "", cpt: "", icd10: "" });
     setAmount(""); setScrubResult(null);
+
+    setTimeout(() => {
+      onAfterSubmit();
+    }, 2200);
   }
 
   const errors   = scrubResult?.filter(e => e.severity === "error")   ?? [];

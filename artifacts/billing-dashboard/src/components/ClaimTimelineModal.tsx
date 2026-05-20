@@ -57,7 +57,7 @@ function generateTimeline(claim: Claim): StageEntry[] {
   const resolvedAt   = addDays(baseDate, claim.status === "Approved" ? 16 : 22);
   const paidAt       = addDays(resolvedAt, 7);
 
-  if (claim.status === "Approved") {
+  if (claim.status === "Approved" || claim.status === "Paid") {
     return [
       { stage: ALL_STAGES[0], status: "completed", timestamp: fmtDate(createdAt),   note: `Claim #${claim.id} created. Biller: Marcus Torres.`,                                   badge: undefined },
       { stage: ALL_STAGES[1], status: "completed", timestamp: fmtDate(scrubbedAt),  note: "AI scrub passed. No critical errors detected. Claim health score: 91/100.",            badge: "Score: 91" },
@@ -72,7 +72,7 @@ function generateTimeline(claim: Claim): StageEntry[] {
     ];
   }
 
-  if (claim.status === "Rejected") {
+  if (claim.status === "Denied" || claim.status === "Corrected" || claim.status === "Resubmitted") {
     const denialAt   = addDays(baseDate, 18);
     const correctedAt = addDays(denialAt, 5);
     const resubAt     = addDays(correctedAt, 1);
@@ -220,17 +220,17 @@ export default function ClaimTimelineModal({ claim, onClose }: Props) {
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-medium text-foreground">{completedCount} of {totalCount} stages complete</span>
             <span className={`text-xs font-bold ${
-              claim.status === "Approved" ? "text-emerald-600" :
-              claim.status === "Rejected" ? "text-amber-600" : "text-primary"
+              (claim.status === "Approved" || claim.status === "Paid") ? "text-emerald-600" :
+              (claim.status === "Denied" || claim.status === "Corrected" || claim.status === "Resubmitted") ? "text-amber-600" : "text-primary"
             }`}>
-              {claim.status === "Approved" ? "Fully Resolved" : claim.status === "Rejected" ? "In Appeal" : "In Progress"}
+              {(claim.status === "Approved" || claim.status === "Paid") ? "Fully Resolved" : (claim.status === "Denied" || claim.status === "Corrected" || claim.status === "Resubmitted") ? "In Appeal" : "In Progress"}
             </span>
           </div>
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                claim.status === "Approved" ? "bg-emerald-500" :
-                claim.status === "Rejected" ? "bg-amber-500" : "bg-primary"
+                (claim.status === "Approved" || claim.status === "Paid") ? "bg-emerald-500" :
+                (claim.status === "Denied" || claim.status === "Corrected" || claim.status === "Resubmitted") ? "bg-amber-500" : "bg-primary"
               }`}
               style={{ width: `${pct}%` }}
             />

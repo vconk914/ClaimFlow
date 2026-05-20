@@ -1,0 +1,79 @@
+Build a premium marketing landing page and guided demo mode for ClaimFlow.
+
+The landing page should feel like a modern healthcare SaaS startup website.
+
+Include:
+- ClaimFlow logo
+- hero section
+- tagline
+- feature highlights
+- dashboard screenshots/mockups
+- specialty-aware billing section
+- payer intelligence section
+- AI assistant section
+- KPI analytics section
+- workflow timeline section
+- testimonials (simulated)
+- pricing preview
+- “Request Demo” CTA
+- “Launch Demo Workspace” CTA
+
+Tagline examples:
+- “Clean Claims. Faster Payments.”
+- “Modern Revenue Cycle Intelligence.”
+- “Catch Denials Before They Happen.”
+
+Add subtle enterprise-grade animations and transitions.
+
+---------------------------------------------------
+GUIDED DEMO MODE
+---------------------------------------------------
+
+Add a “Guided Demo” mode for first-time users.
+
+When launched:
+- walk users through the platform step-by-step
+- highlight major UI sections
+- explain KPIs
+- demonstrate a denial workflow
+- show claim correction
+- show AI recommendations
+- show dashboard updates after fixing a claim
+
+Include:
+- onboarding walkthrough
+- interactive tooltips
+- spotlight effects
+- progress tracker
+- “Skip Tour” option
+
+---------------------------------------------------
+PRODUCT POLISH
+---------------------------------------------------
+
+Improve the overall product polish:
+- smoother transitions
+- consistent spacing
+- premium typography
+- executive-level dashboard feel
+- responsive layout improvements
+- cleaner modal animations
+- subtle loading states/skeletons
+
+---------------------------------------------------
+DEPLOYMENT READINESS
+---------------------------------------------------
+
+Prepare the app for deployment:
+- optimize routing
+- improve component organization
+- clean up mock data structure
+- improve reusable UI patterns
+- add empty states
+- add error states
+- ensure responsive mobile/tablet support
+
+Keep all workflows simulated/local only.
+Do not add HIPAA or external integrations yet.
+
+The final experience should feel like a polished startup product ready for demos, YC applications, pilot clinics, and investor presentations.

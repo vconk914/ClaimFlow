@@ -9,6 +9,7 @@ import { useRegion } from "@/context/RegionalContext";
 import { useTeam } from "@/context/TeamContext";
 import { ROLE_CONFIGS } from "@/data/teamRoles";
 import type { StateId } from "@/data/regionalData";
+import { useClaimStore } from "@/context/ClaimStore";
 
 // ─── Sparkline & trend data ───────────────────────────────────────────────────
 
@@ -694,6 +695,32 @@ export default function Dashboard() {
   const { stateId, config } = useRegion();
   const { activeUser } = useTeam();
   const roleConfig = ROLE_CONFIGS[activeUser.role];
+  const { stats: claimStats } = useClaimStore();
+
+  const dynamicKPICards = KPI_CARDS.map(card => {
+    if (card.id === "ccr") return {
+      ...card,
+      value:     `${claimStats.cleanClaimRate}%`,
+      subtitle:  `${claimStats.total} total claims tracked`,
+      trendLabel: claimStats.cleanClaimRate >= 88 ? "Above benchmark" : "Below target",
+    };
+    if (card.id === "dso") return {
+      ...card,
+      value:    `${claimStats.avgDSO} days`,
+    };
+    if (card.id === "claims") return {
+      ...card,
+      value:     claimStats.total.toString(),
+      subtitle:  `${claimStats.pending + claimStats.submitted} in progress`,
+      trendLabel: `+${claimStats.scrubbed + claimStats.draft} pre-submission`,
+    };
+    if (card.id === "risk") return {
+      ...card,
+      value:     `$${claimStats.revenueAtRisk.toLocaleString("en-US")}`,
+      subtitle:  `${claimStats.denied} denied, ${claimStats.corrected} corrected`,
+    };
+    return card;
+  });
   const accent = STATE_ACCENT[stateId];
   const topPayers = config.payers.slice(0, 4);
   const statePattern = config.denialPatterns.find(d => d.stateSpecific);
@@ -719,9 +746,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* KPI Cards — all clickable */}
+      {/* KPI Cards — all clickable, values from live claim store */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {KPI_CARDS.map(card => (
+        {dynamicKPICards.map(card => (
           <KPICard
             key={card.id}
             {...card}
