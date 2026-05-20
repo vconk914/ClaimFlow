@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { LayoutDashboard, Stethoscope, BarChart3, Bell, Settings, ChevronRight, Globe, MapPin, CheckCircle2, FlaskConical, Users, GitBranch, Activity, Clock, AlertTriangle, DollarSign } from "lucide-react";
+import {
+  LayoutDashboard, Stethoscope, BarChart3, Bell, Settings,
+  ChevronRight, Globe, MapPin, CheckCircle2, FlaskConical,
+  Users, GitBranch, Activity, Clock, AlertTriangle, DollarSign,
+  Sparkles, Play,
+} from "lucide-react";
 import logoUrl from "/logo.png";
 import Dashboard from "@/pages/Dashboard";
 import ClaimsScrubber from "@/pages/ClaimsScrubber";
@@ -9,13 +14,16 @@ import Analytics from "@/pages/Analytics";
 import ClaimsTimeline from "@/pages/ClaimsTimeline";
 import SettingsPage from "@/pages/Settings";
 import DemoScenarios from "@/pages/DemoScenarios";
+import LandingPage from "@/pages/LandingPage";
 import AIAssistant from "@/components/AIAssistant";
+import GuidedTour from "@/components/GuidedTour";
 import { RegionalProvider, useRegion } from "@/context/RegionalContext";
 import { STATE_OPTIONS, type StateId } from "@/data/regionalData";
 import type { ScenarioPrefill } from "@/data/demoScenarios";
 import { TeamProvider, useTeam } from "@/context/TeamContext";
 import { TEAM_MEMBERS, ROLE_CONFIGS } from "@/data/teamRoles";
 import { ClaimStoreProvider, useClaimStore } from "@/context/ClaimStore";
+import { TourProvider, useTour } from "@/context/TourContext";
 import type { ClaimStatus } from "@/data/mockData";
 
 const queryClient = new QueryClient({
@@ -24,15 +32,15 @@ const queryClient = new QueryClient({
 
 type Tab = "dashboard" | "scrubber" | "analytics" | "timeline" | "demo" | "settings";
 
-const NAV_ITEMS: { id: Tab; label: string; icon: any; badge?: string }[] = [
-  { id: "dashboard",  label: "Dashboard",       icon: LayoutDashboard },
-  { id: "scrubber",   label: "Claims Scrubber", icon: Stethoscope },
-  { id: "analytics",  label: "Analytics",       icon: BarChart3 },
-  { id: "timeline",   label: "Claims Timeline", icon: GitBranch },
-  { id: "demo",       label: "Demo Scenarios",  icon: FlaskConical },
+const NAV_ITEMS: { id: Tab; label: string; icon: any; badge?: string; tourKey: string }[] = [
+  { id: "dashboard",  label: "Dashboard",       icon: LayoutDashboard, tourKey: "nav-dashboard" },
+  { id: "scrubber",   label: "Claims Scrubber", icon: Stethoscope,     tourKey: "nav-scrubber"  },
+  { id: "analytics",  label: "Analytics",       icon: BarChart3,       tourKey: "nav-analytics" },
+  { id: "timeline",   label: "Claims Timeline", icon: GitBranch,       tourKey: "nav-timeline"  },
+  { id: "demo",       label: "Demo Scenarios",  icon: FlaskConical,    tourKey: "nav-demo"      },
 ];
 
-// ── Activity Feed (sidebar) ────────────────────────────────────────────────────
+// ── Activity Feed ──────────────────────────────────────────────────────────────
 
 const ACTIVITY_STATUS_COLORS: Partial<Record<ClaimStatus, string>> = {
   Paid:        "bg-emerald-600",
@@ -49,7 +57,6 @@ const ACTIVITY_STATUS_COLORS: Partial<Record<ClaimStatus, string>> = {
 function ActivityFeed() {
   const { activityFeed, stats } = useClaimStore();
   const recent = activityFeed.slice(0, 4);
-
   return (
     <div className="px-3 py-3 border-t border-sidebar-border">
       <div className="flex items-center gap-2 px-2 mb-2">
@@ -77,7 +84,6 @@ function ActivityFeed() {
           })}
         </div>
       )}
-      {/* Live stats mini-bar */}
       <div className="mt-2 pt-2 border-t border-sidebar-border/50 px-2 flex items-center justify-between">
         <div className="flex items-center gap-1">
           <AlertTriangle className="w-2.5 h-2.5 text-red-400" />
@@ -96,6 +102,8 @@ function ActivityFeed() {
   );
 }
 
+// ── Regional colors ────────────────────────────────────────────────────────────
+
 const STATE_DOT_COLORS: Record<StateId, string> = {
   national: "bg-blue-500",
   ny:       "bg-indigo-500",
@@ -104,7 +112,7 @@ const STATE_DOT_COLORS: Record<StateId, string> = {
   tx:       "bg-red-500",
 };
 
-// ── Onboarding modal ──────────────────────────────────────────────────────────
+// ── Onboarding modal ───────────────────────────────────────────────────────────
 
 const STATE_CARD_STYLES: Record<StateId, { border: string; bg: string; text: string; activeBg: string }> = {
   national: { border: "border-blue-200",   bg: "bg-blue-50",   text: "text-blue-700",   activeBg: "bg-blue-600" },
@@ -114,16 +122,13 @@ const STATE_CARD_STYLES: Record<StateId, { border: string; bg: string; text: str
   tx:       { border: "border-red-200",    bg: "bg-red-50",    text: "text-red-700",    activeBg: "bg-red-600" },
 };
 
-function OnboardingModal() {
+function OnboardingModal({ onDone }: { onDone?: () => void }) {
   const { completeOnboarding, onboardingComplete } = useRegion();
   const [selected, setSelected] = useState<StateId>("national");
-
   if (onboardingComplete) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm">
-      <div className="w-full max-w-xl mx-4 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
-        {/* Header */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-xl mx-4 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up">
         <div className="px-8 pt-8 pb-6 border-b border-border">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -136,12 +141,9 @@ function OnboardingModal() {
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">
             Select your primary billing region to load state-specific payer profiles, denial patterns, and compliance workflow rules.
-            You can change this anytime in Settings.
           </p>
         </div>
-
-        {/* State cards */}
-        <div className="px-8 py-6 space-y-3">
+        <div className="px-8 py-6">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-4">Select your region</p>
           <div className="grid grid-cols-5 gap-2">
             {STATE_OPTIONS.map(opt => {
@@ -165,11 +167,9 @@ function OnboardingModal() {
             })}
           </div>
         </div>
-
-        {/* Action */}
         <div className="px-8 pb-8">
           <button
-            onClick={() => completeOnboarding(selected)}
+            onClick={() => { completeOnboarding(selected); onDone?.(); }}
             className="w-full bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm"
           >
             Load {STATE_OPTIONS.find(s => s.id === selected)?.label} Profile &amp; Get Started
@@ -183,7 +183,7 @@ function OnboardingModal() {
   );
 }
 
-// ── User switcher ─────────────────────────────────────────────────────────────
+// ── User switcher ──────────────────────────────────────────────────────────────
 
 function UserSwitcher() {
   const { activeUser, setActiveUserId } = useTeam();
@@ -205,7 +205,7 @@ function UserSwitcher() {
         <Users className="w-3.5 h-3.5 text-sidebar-foreground/40 shrink-0" />
       </button>
       {open && (
-        <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50">
+        <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in-up">
           <div className="px-3 py-2 border-b border-border">
             <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Switch User</p>
           </div>
@@ -237,57 +237,83 @@ function UserSwitcher() {
   );
 }
 
-// ── Main app shell ────────────────────────────────────────────────────────────
+// ── Tour trigger ───────────────────────────────────────────────────────────────
 
-function AppShell() {
-  const [activeTab, setActiveTab] = useState<Tab>("dashboard");
+function TourButton() {
+  const { startTour, active } = useTour();
+  if (active) return null;
+  return (
+    <button
+      onClick={startTour}
+      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors group"
+    >
+      <Play className="w-4 h-4 group-hover:text-blue-400 transition-colors" />
+      <span className="flex-1 text-left">Guided Tour</span>
+      <Sparkles className="w-3 h-3 text-blue-400/60" />
+    </button>
+  );
+}
+
+// ── Main app shell — receives activeTab + setter so TourProvider can drive it ──
+
+interface AppShellProps {
+  onShowLanding: () => void;
+  activeTab: Tab;
+  onTabChange: (tab: string) => void;
+}
+
+function AppShellInner({ onShowLanding, activeTab, onTabChange }: AppShellProps) {
   const [prefillData, setPrefillData] = useState<ScenarioPrefill | null>(null);
   const [prefillKey, setPrefillKey] = useState(0);
+  const [pageKey, setPageKey] = useState(0);
   const { stateId, config } = useRegion();
+  const { startTour } = useTour();
+
+  function handleTabChange(tab: string) {
+    onTabChange(tab);
+    setPageKey(k => k + 1);
+  }
 
   function loadScenarioInScrubber(prefill: ScenarioPrefill) {
     setPrefillData(prefill);
     setPrefillKey(k => k + 1);
-    setActiveTab("scrubber");
+    handleTabChange("scrubber");
   }
 
   const dotColor = STATE_DOT_COLORS[stateId];
 
   return (
     <>
-      <OnboardingModal />
+      <OnboardingModal onDone={() => setTimeout(startTour, 800)} />
       <div className="flex h-screen bg-background overflow-hidden">
+
         {/* Sidebar */}
         <aside className="w-64 flex flex-col bg-sidebar text-sidebar-foreground shrink-0 border-r border-sidebar-border">
-          {/* Logo */}
-          <div className="px-4 py-4 border-b border-sidebar-border flex items-center">
+          <div className="px-4 py-4 border-b border-sidebar-border flex items-center gap-3">
             <div className="bg-white rounded-xl px-3 py-2 inline-flex items-center shrink-0">
               <img src={logoUrl} alt="ClaimFlow" className="h-10 w-auto object-contain" />
             </div>
           </div>
 
-          {/* Practice + Region info */}
           <div className="px-5 py-3 border-b border-sidebar-border">
             <p className="text-xs text-sidebar-foreground/50 uppercase tracking-wide mb-1">Practice</p>
             <p className="text-xs font-medium text-sidebar-foreground">Northgate Urology Associates</p>
             <p className="text-xs text-sidebar-foreground/60">NPI: 1234567890</p>
             <div className="mt-2 flex items-center gap-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${dotColor} shrink-0`} />
-              <span className="text-xs text-sidebar-foreground/60">
-                {config.label} region active
-              </span>
+              <span className="text-xs text-sidebar-foreground/60">{config.label} region active</span>
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 px-3 py-4 space-y-1">
             <p className="text-xs text-sidebar-foreground/40 uppercase tracking-wide px-2 mb-2">Main Menu</p>
-            {NAV_ITEMS.map(({ id, label, icon: Icon, badge }) => {
+            {NAV_ITEMS.map(({ id, label, icon: Icon, badge, tourKey }) => {
               const isActive = activeTab === id;
               return (
                 <button
                   key={id}
-                  onClick={() => setActiveTab(id)}
+                  data-tour={tourKey}
+                  onClick={() => handleTabChange(id)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group ${
                     isActive
                       ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
@@ -297,9 +323,7 @@ function AppShell() {
                   <Icon className="w-4 h-4 shrink-0" />
                   <span className="flex-1 text-left">{label}</span>
                   {badge && !isActive && (
-                    <span className="text-xs bg-red-500 text-white rounded-full px-1.5 py-0.5 font-semibold leading-none">
-                      {badge}
-                    </span>
+                    <span className="text-xs bg-red-500 text-white rounded-full px-1.5 py-0.5 font-semibold leading-none">{badge}</span>
                   )}
                   {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
                 </button>
@@ -307,20 +331,16 @@ function AppShell() {
             })}
           </nav>
 
-          {/* Activity Feed */}
           <ActivityFeed />
 
-          {/* Bottom section */}
           <div className="px-3 py-4 border-t border-sidebar-border space-y-1">
-            <button
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
-            >
+            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">
               <Bell className="w-4 h-4" />
               <span className="flex-1 text-left">Notifications</span>
               <span className="text-xs bg-sidebar-foreground/20 text-sidebar-foreground rounded-full px-1.5 py-0.5 font-medium">3</span>
             </button>
             <button
-              onClick={() => setActiveTab("settings")}
+              onClick={() => handleTabChange("settings")}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                 activeTab === "settings"
                   ? "bg-sidebar-primary text-sidebar-primary-foreground"
@@ -332,14 +352,22 @@ function AppShell() {
               {activeTab === "settings" && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
             </button>
 
-            {/* User switcher */}
+            <TourButton />
+
+            <button
+              onClick={onShowLanding}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground/70 transition-colors"
+            >
+              <Globe className="w-4 h-4" />
+              <span className="flex-1 text-left">About ClaimFlow</span>
+            </button>
+
             <UserSwitcher />
           </div>
         </aside>
 
         {/* Main content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Top bar */}
           <header className="h-14 flex items-center justify-between px-6 border-b border-border bg-card shrink-0">
             <div className="flex items-center gap-2 text-sm">
               <span className="text-muted-foreground">ClaimFlow</span>
@@ -349,45 +377,84 @@ function AppShell() {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              {/* Regional indicator */}
               <button
-                onClick={() => setActiveTab("settings")}
+                onClick={() => handleTabChange("settings")}
                 className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/60 hover:bg-muted px-2.5 py-1 rounded-full transition-colors border border-border"
               >
-                <MapPin className={`w-3 h-3`} />
+                <MapPin className="w-3 h-3" />
                 <span className={`font-semibold ${dotColor.replace("bg-", "text-")}`}>{config.abbreviation}</span>
                 <span>{config.label}</span>
               </button>
-              <span className="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
-                Simulated Data · HIPAA Compliant Demo
+              <span className="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full hidden sm:inline">
+                Simulated · HIPAA Demo
               </span>
             </div>
           </header>
 
-          {/* Page content */}
           <main className="flex-1 overflow-y-auto p-6">
-            {activeTab === "dashboard"  && <Dashboard />}
-            {activeTab === "scrubber"   && <ClaimsScrubber onAfterSubmit={() => setActiveTab("timeline")} prefill={prefillData} prefillKey={prefillKey} />}
-            {activeTab === "analytics"  && <Analytics />}
-            {activeTab === "timeline"   && <ClaimsTimeline />}
-            {activeTab === "demo"       && <DemoScenarios onLoadInScrubber={loadScenarioInScrubber} />}
-            {activeTab === "settings"   && <SettingsPage />}
+            <div key={pageKey} className="page-content h-full">
+              {activeTab === "dashboard"  && <Dashboard />}
+              {activeTab === "scrubber"   && (
+                <ClaimsScrubber
+                  onAfterSubmit={() => handleTabChange("timeline")}
+                  prefill={prefillData}
+                  prefillKey={prefillKey}
+                />
+              )}
+              {activeTab === "analytics"  && <Analytics />}
+              {activeTab === "timeline"   && <ClaimsTimeline />}
+              {activeTab === "demo"       && <DemoScenarios onLoadInScrubber={loadScenarioInScrubber} />}
+              {activeTab === "settings"   && <SettingsPage />}
+            </div>
           </main>
         </div>
       </div>
-      <AIAssistant />
+
+      <div data-tour="ai-assistant-btn">
+        <AIAssistant />
+      </div>
+
+      <GuidedTour />
     </>
   );
 }
 
+// ── AppShell lifts tab state so TourProvider can navigate tabs ─────────────────
+
+function AppShell({ onShowLanding }: { onShowLanding: () => void }) {
+  const [activeTab, setActiveTab] = useState<Tab>("dashboard");
+
+  const handleTabChange = useCallback((tab: string) => {
+    setActiveTab(tab as Tab);
+  }, []);
+
+  return (
+    <TourProvider onTabChange={handleTabChange}>
+      <AppShellInner
+        onShowLanding={onShowLanding}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
+    </TourProvider>
+  );
+}
+
+// ── Root App ───────────────────────────────────────────────────────────────────
+
 function App() {
+  const [showLanding, setShowLanding] = useState(true);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <RegionalProvider>
           <TeamProvider>
             <ClaimStoreProvider>
-              <AppShell />
+              {showLanding ? (
+                <LandingPage onEnterApp={() => setShowLanding(false)} />
+              ) : (
+                <AppShell onShowLanding={() => setShowLanding(true)} />
+              )}
             </ClaimStoreProvider>
           </TeamProvider>
         </RegionalProvider>
