@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Stethoscope, BarChart3, Bell, Settings,
   ChevronRight, Globe, MapPin, CheckCircle2, FlaskConical,
   Users, GitBranch, Activity, Clock, AlertTriangle, DollarSign,
-  Sparkles, Play,
+  Sparkles, Play, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import logoUrl from "/logo.png";
 import Dashboard from "@/pages/Dashboard";
@@ -237,6 +237,18 @@ function UserSwitcher() {
   );
 }
 
+// ── Collapsed user avatar (icon-only mode) ────────────────────────────────────
+
+function UserSwitcherCollapsed() {
+  const { activeUser } = useTeam();
+  return (
+    <div className={`w-7 h-7 rounded-full ${activeUser.avatar} flex items-center justify-center text-white text-xs font-bold shrink-0 mt-1`}
+      title={activeUser.name}>
+      {activeUser.initials}
+    </div>
+  );
+}
+
 // ── Tour trigger ───────────────────────────────────────────────────────────────
 
 function TourButton() {
@@ -266,6 +278,7 @@ function AppShellInner({ onShowLanding, activeTab, onTabChange }: AppShellProps)
   const [prefillData, setPrefillData] = useState<ScenarioPrefill | null>(null);
   const [prefillKey, setPrefillKey] = useState(0);
   const [pageKey, setPageKey] = useState(0);
+  const [collapsed, setCollapsed] = useState(false);
   const { stateId, config } = useRegion();
   const { startTour } = useTour();
 
@@ -288,81 +301,125 @@ function AppShellInner({ onShowLanding, activeTab, onTabChange }: AppShellProps)
       <div className="flex h-screen bg-background overflow-hidden">
 
         {/* Sidebar */}
-        <aside className="w-64 flex flex-col bg-sidebar text-sidebar-foreground shrink-0 border-r border-sidebar-border">
-          <div className="px-4 py-4 border-b border-sidebar-border flex items-center gap-3">
-            <div className="bg-white rounded-xl px-3 py-2 inline-flex items-center shrink-0">
-              <img src={logoUrl} alt="ClaimFlow" className="h-10 w-auto object-contain" />
-            </div>
+        <aside className={`flex flex-col bg-sidebar text-sidebar-foreground shrink-0 border-r border-sidebar-border transition-all duration-300 ease-in-out ${collapsed ? "w-16" : "w-64"}`}>
+          {/* Logo + collapse toggle */}
+          <div className="px-3 py-4 border-b border-sidebar-border flex items-center justify-between gap-2 min-h-[72px]">
+            {!collapsed && (
+              <div className="bg-white rounded-xl px-3 py-2 inline-flex items-center shrink-0">
+                <img src={logoUrl} alt="ClaimFlow" className="h-10 w-auto object-contain" />
+              </div>
+            )}
+            <button
+              onClick={() => setCollapsed(c => !c)}
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className={`p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors shrink-0 ${collapsed ? "mx-auto" : "ml-auto"}`}
+            >
+              {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+            </button>
           </div>
 
-          <div className="px-5 py-3 border-b border-sidebar-border">
-            <p className="text-xs text-sidebar-foreground/50 uppercase tracking-wide mb-1">Practice</p>
-            <p className="text-xs font-medium text-sidebar-foreground">Northgate Urology Associates</p>
-            <p className="text-xs text-sidebar-foreground/60">NPI: 1234567890</p>
-            <div className="mt-2 flex items-center gap-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${dotColor} shrink-0`} />
-              <span className="text-xs text-sidebar-foreground/60">{config.label} region active</span>
+          {/* Practice info — hidden when collapsed */}
+          {!collapsed && (
+            <div className="px-5 py-3 border-b border-sidebar-border">
+              <p className="text-xs text-sidebar-foreground/50 uppercase tracking-wide mb-1">Practice</p>
+              <p className="text-xs font-medium text-sidebar-foreground">Northgate Urology Associates</p>
+              <p className="text-xs text-sidebar-foreground/60">NPI: 1234567890</p>
+              <div className="mt-2 flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${dotColor} shrink-0`} />
+                <span className="text-xs text-sidebar-foreground/60">{config.label} region active</span>
+              </div>
             </div>
-          </div>
+          )}
 
-          <nav className="flex-1 px-3 py-4 space-y-1">
-            <p className="text-xs text-sidebar-foreground/40 uppercase tracking-wide px-2 mb-2">Main Menu</p>
+          {/* Navigation */}
+          <nav className={`flex-1 px-2 py-4 space-y-1 ${collapsed ? "flex flex-col items-center" : ""}`}>
+            {!collapsed && <p className="text-xs text-sidebar-foreground/40 uppercase tracking-wide px-2 mb-2">Main Menu</p>}
             {NAV_ITEMS.map(({ id, label, icon: Icon, badge, tourKey }) => {
               const isActive = activeTab === id;
               return (
                 <button
                   key={id}
                   data-tour={tourKey}
+                  title={collapsed ? label : undefined}
                   onClick={() => handleTabChange(id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group ${
+                  className={`flex items-center gap-3 rounded-lg text-sm font-medium transition-all group ${
+                    collapsed ? "w-10 h-10 justify-center p-0" : "w-full px-3 py-2.5"
+                  } ${
                     isActive
                       ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                   }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
-                  <span className="flex-1 text-left">{label}</span>
-                  {badge && !isActive && (
+                  {!collapsed && <span className="flex-1 text-left">{label}</span>}
+                  {!collapsed && badge && !isActive && (
                     <span className="text-xs bg-red-500 text-white rounded-full px-1.5 py-0.5 font-semibold leading-none">{badge}</span>
                   )}
-                  {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
+                  {!collapsed && isActive && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
                 </button>
               );
             })}
           </nav>
 
-          <ActivityFeed />
+          {/* Activity feed — hidden when collapsed */}
+          {!collapsed && <ActivityFeed />}
 
-          <div className="px-3 py-4 border-t border-sidebar-border space-y-1">
-            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">
-              <Bell className="w-4 h-4" />
-              <span className="flex-1 text-left">Notifications</span>
-              <span className="text-xs bg-sidebar-foreground/20 text-sidebar-foreground rounded-full px-1.5 py-0.5 font-medium">3</span>
-            </button>
+          {/* Bottom section */}
+          <div className={`px-2 py-4 border-t border-sidebar-border space-y-1 ${collapsed ? "flex flex-col items-center" : ""}`}>
+            {/* Notifications */}
             <button
+              title={collapsed ? "Notifications" : undefined}
+              className={`flex items-center gap-3 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors ${
+                collapsed ? "w-10 h-10 justify-center p-0" : "w-full px-3 py-2"
+              }`}
+            >
+              <Bell className="w-4 h-4 shrink-0" />
+              {!collapsed && <><span className="flex-1 text-left">Notifications</span><span className="text-xs bg-sidebar-foreground/20 text-sidebar-foreground rounded-full px-1.5 py-0.5 font-medium">3</span></>}
+            </button>
+
+            {/* Settings */}
+            <button
+              title={collapsed ? "Settings" : undefined}
               onClick={() => handleTabChange("settings")}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-3 rounded-lg text-sm transition-colors ${
+                collapsed ? "w-10 h-10 justify-center p-0" : "w-full px-3 py-2"
+              } ${
                 activeTab === "settings"
                   ? "bg-sidebar-primary text-sidebar-primary-foreground"
                   : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               }`}
             >
-              <Settings className="w-4 h-4" />
-              <span className="flex-1 text-left">Settings</span>
-              {activeTab === "settings" && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
+              <Settings className="w-4 h-4 shrink-0" />
+              {!collapsed && <><span className="flex-1 text-left">Settings</span>{activeTab === "settings" && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}</>}
             </button>
 
-            <TourButton />
+            {/* Tour button — icon-only when collapsed */}
+            {!collapsed ? (
+              <TourButton />
+            ) : (
+              <button
+                title="Guided Tour"
+                onClick={startTour}
+                className="w-10 h-10 flex items-center justify-center rounded-lg text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+              >
+                <Play className="w-4 h-4" />
+              </button>
+            )}
 
+            {/* About */}
             <button
+              title={collapsed ? "About ClaimFlow" : undefined}
               onClick={onShowLanding}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground/70 transition-colors"
+              className={`flex items-center gap-3 rounded-lg text-sm text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground/70 transition-colors ${
+                collapsed ? "w-10 h-10 justify-center p-0" : "w-full px-3 py-2"
+              }`}
             >
-              <Globe className="w-4 h-4" />
-              <span className="flex-1 text-left">About ClaimFlow</span>
+              <Globe className="w-4 h-4 shrink-0" />
+              {!collapsed && <span className="flex-1 text-left">About ClaimFlow</span>}
             </button>
 
-            <UserSwitcher />
+            {/* User switcher — avatar-only when collapsed */}
+            {!collapsed ? <UserSwitcher /> : <UserSwitcherCollapsed />}
           </div>
         </aside>
 
