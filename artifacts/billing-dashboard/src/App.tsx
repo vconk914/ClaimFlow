@@ -5,12 +5,13 @@ import {
   LayoutDashboard, Stethoscope, BarChart3, Bell, Settings,
   ChevronRight, Globe, MapPin, CheckCircle2, FlaskConical,
   Users, GitBranch, Activity, Clock, AlertTriangle, DollarSign,
-  Sparkles, Play, PanelLeftClose, PanelLeftOpen,
+  Sparkles, Play, PanelLeftClose, PanelLeftOpen, Brain,
 } from "lucide-react";
 import logoUrl from "/logo.png";
 import Dashboard from "@/pages/Dashboard";
 import ClaimsScrubber from "@/pages/ClaimsScrubber";
 import Analytics from "@/pages/Analytics";
+import PredictiveAnalytics from "@/pages/PredictiveAnalytics";
 import ClaimsTimeline from "@/pages/ClaimsTimeline";
 import SettingsPage from "@/pages/Settings";
 import DemoScenarios from "@/pages/DemoScenarios";
@@ -30,13 +31,14 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false } },
 });
 
-type Tab = "dashboard" | "scrubber" | "analytics" | "timeline" | "demo" | "settings";
+type Tab = "dashboard" | "scrubber" | "analytics" | "predictive" | "timeline" | "demo" | "settings";
 
 const NAV_ITEMS: { id: Tab; label: string; icon: any; badge?: string; tourKey: string }[] = [
   { id: "dashboard",  label: "Dashboard",       icon: LayoutDashboard, tourKey: "nav-dashboard" },
   { id: "scrubber",   label: "Claims Scrubber", icon: Stethoscope,     tourKey: "nav-scrubber"  },
-  { id: "analytics",  label: "Analytics",       icon: BarChart3,       tourKey: "nav-analytics" },
-  { id: "timeline",   label: "Claims Timeline", icon: GitBranch,       tourKey: "nav-timeline"  },
+  { id: "analytics",   label: "Analytics",         icon: BarChart3,       tourKey: "nav-analytics"   },
+  { id: "predictive", label: "Predictive",        icon: Brain,           tourKey: "nav-predictive"  },
+  { id: "timeline",   label: "Claims Timeline",   icon: GitBranch,       tourKey: "nav-timeline"    },
   { id: "demo",       label: "Demo Scenarios",  icon: FlaskConical,    tourKey: "nav-demo"      },
 ];
 
@@ -459,6 +461,7 @@ function AppShellInner({ onShowLanding, activeTab, onTabChange }: AppShellProps)
                 />
               )}
               {activeTab === "analytics"  && <Analytics />}
+              {activeTab === "predictive" && <PredictiveAnalytics />}
               {activeTab === "timeline"   && <ClaimsTimeline />}
               {activeTab === "demo"       && <DemoScenarios onLoadInScrubber={loadScenarioInScrubber} />}
               {activeTab === "settings"   && <SettingsPage />}
