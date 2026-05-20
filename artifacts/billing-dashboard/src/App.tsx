@@ -17,6 +17,7 @@ import SettingsPage from "@/pages/Settings";
 import DemoScenarios from "@/pages/DemoScenarios";
 import LandingPage from "@/pages/LandingPage";
 import AIAssistant from "@/components/AIAssistant";
+import NotificationsPanel from "@/components/NotificationsPanel";
 import GuidedTour from "@/components/GuidedTour";
 import { RegionalProvider, useRegion } from "@/context/RegionalContext";
 import { STATE_OPTIONS, type StateId } from "@/data/regionalData";
@@ -369,15 +370,7 @@ function AppShellInner({ onShowLanding, activeTab, onTabChange }: AppShellProps)
           {/* Bottom section */}
           <div className={`px-2 py-4 border-t border-sidebar-border space-y-1 ${collapsed ? "flex flex-col items-center" : ""}`}>
             {/* Notifications */}
-            <button
-              title={collapsed ? "Notifications" : undefined}
-              className={`flex items-center gap-3 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors ${
-                collapsed ? "w-10 h-10 justify-center p-0" : "w-full px-3 py-2"
-              }`}
-            >
-              <Bell className="w-4 h-4 shrink-0" />
-              {!collapsed && <><span className="flex-1 text-left">Notifications</span><span className="text-xs bg-sidebar-foreground/20 text-sidebar-foreground rounded-full px-1.5 py-0.5 font-medium">3</span></>}
-            </button>
+            <NotificationsPanel collapsed={collapsed} />
 
             {/* Settings */}
             <button
