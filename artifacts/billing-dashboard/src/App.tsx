@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Stethoscope, BarChart3, Bell, Settings,
   ChevronRight, Globe, MapPin, CheckCircle2, FlaskConical,
   Users, GitBranch, Activity, Clock, AlertTriangle, DollarSign,
-  Sparkles, Play, PanelLeftClose, PanelLeftOpen, Brain, ClipboardList,
+  Sparkles, Play, PanelLeftClose, PanelLeftOpen, Brain, ClipboardList, BrainCircuit,
 } from "lucide-react";
 import logoUrl from "/logo.png";
 import Dashboard from "@/pages/Dashboard";
@@ -13,6 +13,7 @@ import ClaimsScrubber from "@/pages/ClaimsScrubber";
 import Analytics from "@/pages/Analytics";
 import PredictiveAnalytics from "@/pages/PredictiveAnalytics";
 import DenialWorkQueue from "@/pages/DenialWorkQueue";
+import LearningDashboard from "@/pages/LearningDashboard";
 import ClaimsTimeline from "@/pages/ClaimsTimeline";
 import SettingsPage from "@/pages/Settings";
 import DemoScenarios from "@/pages/DemoScenarios";
@@ -33,7 +34,7 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false } },
 });
 
-type Tab = "dashboard" | "workqueue" | "scrubber" | "analytics" | "predictive" | "timeline" | "demo" | "settings";
+type Tab = "dashboard" | "workqueue" | "scrubber" | "analytics" | "predictive" | "learning" | "timeline" | "demo" | "settings";
 
 const NAV_ITEMS: { id: Tab; label: string; icon: any; badge?: string; tourKey: string }[] = [
   { id: "dashboard",  label: "Dashboard",          icon: LayoutDashboard, tourKey: "nav-dashboard"  },
@@ -41,6 +42,7 @@ const NAV_ITEMS: { id: Tab; label: string; icon: any; badge?: string; tourKey: s
   { id: "scrubber",   label: "Claims Scrubber",    icon: Stethoscope,     tourKey: "nav-scrubber"   },
   { id: "analytics",  label: "Analytics",          icon: BarChart3,       tourKey: "nav-analytics"  },
   { id: "predictive", label: "Predictive",        icon: Brain,           tourKey: "nav-predictive"  },
+  { id: "learning",   label: "Learning Engine",   icon: BrainCircuit,    tourKey: "nav-learning"    },
   { id: "timeline",   label: "Claims Timeline",   icon: GitBranch,       tourKey: "nav-timeline"    },
   { id: "demo",       label: "Demo Scenarios",  icon: FlaskConical,    tourKey: "nav-demo"      },
 ];
@@ -449,6 +451,7 @@ function AppShellInner({ onShowLanding, activeTab, onTabChange }: AppShellProps)
             <div key={pageKey} className="page-content h-full">
               {activeTab === "dashboard"  && <Dashboard />}
               {activeTab === "workqueue"  && <DenialWorkQueue />}
+              {activeTab === "learning"   && <LearningDashboard />}
               {activeTab === "scrubber"   && (
                 <ClaimsScrubber
                   onAfterSubmit={() => handleTabChange("timeline")}

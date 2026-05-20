@@ -1,5 +1,6 @@
 import type { Claim } from "@/data/mockData";
 import { getPayerProfile } from "@/data/payerProfiles";
+import { getLearningAdjustment } from "@/lib/learningEngine";
 
 export interface RiskFactor {
   label: string;
@@ -123,6 +124,20 @@ export function computeClaimRisk(claim: Claim): ClaimRiskScore {
   } else if (claim.amount < 100) {
     riskFactors.push({ label: "Claim Amount", impact: "positive", detail: `Low-value claim — less likely to trigger additional review`, weight: 0 });
   }
+
+  // ── Learning engine adjustment ────────────────────────────────────────────
+  try {
+    const learningAdj = getLearningAdjustment(claim.payer, claim.cpt);
+    if (learningAdj.hasLearning && learningAdj.denialProbabilityDelta !== 0) {
+      denialProb += learningAdj.denialProbabilityDelta;
+      riskFactors.push({
+        label:  "Learning Engine",
+        impact: learningAdj.denialProbabilityDelta > 0 ? "negative" : "positive",
+        detail: `Learned: ${learningAdj.topFactor}`,
+        weight: learningAdj.denialProbabilityDelta,
+      });
+    }
+  } catch { /* graceful degradation if learning store unavailable */ }
 
   // ── Status-based overrides ────────────────────────────────────────────────
   const terminalStatus = claim.status;

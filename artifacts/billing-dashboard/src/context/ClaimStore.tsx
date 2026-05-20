@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useMemo, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useMemo, useCallback, useRef, useEffect, type ReactNode } from "react";
 import type { Claim, ClaimStatus, TimelineEvent } from "@/data/mockData";
 import { INITIAL_CLAIMS } from "@/data/mockData";
+import { recordOutcome, categorizeDenialCode } from "@/lib/learningEngine";
 
 // ─── Activity Feed ────────────────────────────────────────────────────────────
 
@@ -90,6 +91,9 @@ function computeStats(claims: Claim[]): ClaimStats {
 export function ClaimStoreProvider({ children }: { children: ReactNode }) {
   const [claims, setClaims]           = useState<Claim[]>(INITIAL_CLAIMS);
   const [activityFeed, setActivityFeed] = useState<ActivityEvent[]>([]);
+  const claimsRef = useRef<Claim[]>(INITIAL_CLAIMS);
+
+  useEffect(() => { claimsRef.current = claims; }, [claims]);
 
   const stats = useMemo(() => computeStats(claims), [claims]);
 
@@ -116,6 +120,27 @@ export function ClaimStoreProvider({ children }: { children: ReactNode }) {
     note?: string,
     actor?: string,
   ) => {
+    const LEARNING_STATUSES = new Set<ClaimStatus>(["Denied", "Approved", "Paid", "Corrected", "Resubmitted"]);
+    if (LEARNING_STATUSES.has(status)) {
+      const claim = claimsRef.current.find(c => c.id === id);
+      if (claim) {
+        recordOutcome({
+          timestamp:   new Date().toISOString(),
+          claimId:     claim.id,
+          payer:       claim.payer,
+          cpt:         claim.cpt,
+          icd10:       claim.icd10,
+          amount:      claim.amount,
+          fromStatus:  claim.status,
+          toStatus:    status,
+          denialCode:  status === "Denied" ? (claim.denialCode ?? undefined) : undefined,
+          denialCategory: status === "Denied" && claim.denialCode ? categorizeDenialCode(claim.denialCode) : undefined,
+          correctionSucceeded: (status === "Corrected" || status === "Resubmitted") ? undefined :
+            (claim.status === "Corrected" || claim.status === "Resubmitted") && (status === "Approved" || status === "Paid") ? true : undefined,
+          scrubScore:  claim.scrubScore,
+        });
+      }
+    }
     setClaims(prev => prev.map(c => {
       if (c.id !== id) return c;
       const fromStatus = c.status;
