@@ -64,22 +64,22 @@ const KPI_DETAILS: Record<KPIId, KPIDetail> = {
       { name: "Medicaid",           value: 78, unit: "%", color: "#C4B5FD" },
     ],
     specialtyBreakdown: [
-      { name: "Preventive Care",    value: 95, unit: "%" },
-      { name: "Family Medicine",    value: 91, unit: "%" },
-      { name: "Urgent & Emergency", value: 84, unit: "%" },
-      { name: "Behavioral Health",  value: 79, unit: "%" },
+      { name: "BPH / LUTS Management",       value: 94, unit: "%" },
+      { name: "Hematuria Workup",             value: 89, unit: "%" },
+      { name: "Kidney Stone Care",            value: 86, unit: "%" },
+      { name: "Urodynamics / Incontinence",   value: 78, unit: "%" },
     ],
     relatedClaims: [
-      { id: "CLM-2024-0891", patient: "James Kowalski",  amount: "$420", status: "Denied",  issue: "CO-11: ICD-10 inconsistent with procedure" },
-      { id: "CLM-2024-0887", patient: "Maria Delgado",   amount: "$285", status: "Denied",  issue: "CO-4: Modifier inconsistent with procedure" },
-      { id: "CLM-2024-0879", patient: "Robert Chen",     amount: "$195", status: "Denied",  issue: "CO-29: Timely filing deadline exceeded" },
-      { id: "CLM-2024-0872", patient: "Sandra Okafor",   amount: "$540", status: "Pending", issue: "PR-96: Documentation required" },
-      { id: "CLM-2024-0866", patient: "Derek Nunez",     amount: "$350", status: "Denied",  issue: "CO-50: Not medically necessary as billed" },
+      { id: "CLM-2024-0891", patient: "Raymond Holbrook",  amount: "$380", status: "Denied",  issue: "CO-11: N39.0 (UTI) invalid for cystoscopy — use R31.0" },
+      { id: "CLM-2024-0887", patient: "Walter Grossman",   amount: "$52",  status: "Denied",  issue: "CO-50: PSA with Z00.00 — use G0103 + Z12.5 for Medicare" },
+      { id: "CLM-2024-0879", patient: "Harold Pennington", amount: "$220", status: "Denied",  issue: "CO-97: Modifier -25 missing on E&M + cystoscopy same day" },
+      { id: "CLM-2024-0872", patient: "Norman Sinclair",   amount: "$890", status: "Pending", issue: "CO-50: Prostate biopsy — D29.1 missing elevated PSA code" },
+      { id: "CLM-2024-0866", patient: "Frederick Abernathy", amount: "$890", status: "Denied", issue: "CO-197: CT urogram — Aetna authorization not obtained" },
     ],
     actions: [
-      { priority: "critical", text: "Behavioral Health CPT codes submitted without F-code primary ICD-10 — causing 21% of BH denials.", impact: "Fixing adds ~+6% to BH CCR, ~$3,200/mo recovered" },
-      { priority: "high",     text: "Medicaid modifier requirements changed Feb 2024 — review modifier -25 policy for all E&M + procedure same-day pairs.", impact: "Closes 4 of 9 open Medicaid rejections" },
-      { priority: "medium",   text: "Run ClaimFlow AI scrub on all pending claims before submission to catch CPT/ICD-10 compatibility issues.", impact: "Estimated 2–3% lift in first-pass rate" },
+      { priority: "critical", text: "6 cystoscopy claims denied CO-11 — N39.0 (UTI) submitted instead of R31.0 (Hematuria). Add hematuria as default ICD-10 template for cystoscopy CPT codes.", impact: "Recovering ~$2,280/mo in CO-11 reversals" },
+      { priority: "high",     text: "4 claims missing Modifier -25 on same-day E&M + urology procedure pairs — UHC bundling E&M into procedure payment.", impact: "Adds ~$880/mo in recovered E&M payments" },
+      { priority: "medium",   text: "Run ClaimFlow scrubber on all pending cystoscopy and prostate biopsy claims before submission to catch CPT/ICD-10 mismatches.", impact: "Estimated +3% lift in urology first-pass rate" },
     ],
   },
 
@@ -99,22 +99,22 @@ const KPI_DETAILS: Record<KPIId, KPIDetail> = {
       { name: "Medicaid",            value: 52, unit: "d", color: "#DC2626" },
     ],
     specialtyBreakdown: [
-      { name: "Preventive Care",    value: 22, unit: "days" },
-      { name: "Family Medicine",    value: 31, unit: "days" },
-      { name: "Urgent & Emergency", value: 35, unit: "days" },
-      { name: "Behavioral Health",  value: 48, unit: "days" },
+      { name: "PSA / Lab-only Visits",       value: 24, unit: "days" },
+      { name: "BPH Office Visits",           value: 31, unit: "days" },
+      { name: "Cystoscopy / Endoscopy",      value: 38, unit: "days" },
+      { name: "Surgical (ESWL / TURP)",      value: 44, unit: "days" },
     ],
     relatedClaims: [
-      { id: "CLM-2024-0441", patient: "Thomas Reeves",  amount: "$1,240", status: "Pending", issue: "Day 61 — Medicaid pending review, no response" },
-      { id: "CLM-2024-0423", patient: "Pamela Voss",    amount: "$890",   status: "Pending", issue: "Day 58 — Cigna documentation request open" },
-      { id: "CLM-2024-0398", patient: "Carlos Mendez",  amount: "$2,140", status: "Pending", issue: "Day 55 — BH payer review, auth expiring" },
-      { id: "CLM-2024-0377", patient: "Janet Kimura",   amount: "$460",   status: "Pending", issue: "Day 52 — Medicaid — secondary billing eligible" },
-      { id: "CLM-2024-0355", patient: "Frank O'Brien",  amount: "$780",   status: "Pending", issue: "Day 48 — UHC — missing modifier -59 on file" },
+      { id: "CLM-2024-0441", patient: "Douglas Mackenzie",  amount: "$3,200", status: "Pending", issue: "Day 61 — ESWL prior auth appeal pending at UHC" },
+      { id: "CLM-2024-0423", patient: "Loretta Yamamoto",   amount: "$580",   status: "Pending", issue: "Day 58 — Urodynamics auth appeal, BlueCross" },
+      { id: "CLM-2024-0398", patient: "Clarence Hoffmeister",amount: "$145",  status: "Pending", issue: "Day 55 — Catheter insertion corrected claim, Medicare" },
+      { id: "CLM-2024-0377", patient: "Frederick Abernathy",amount: "$890",   status: "Pending", issue: "Day 52 — CT urogram retroactive auth, Aetna" },
+      { id: "CLM-2024-0355", patient: "Harold Pennington",  amount: "$420",   status: "Pending", issue: "Day 48 — E&M + cystoscopy appeal, Modifier -25" },
     ],
     actions: [
-      { priority: "critical", text: "Medicaid DSO is 52 days — 3 accounts eligible for secondary billing escalation immediately.", impact: "$14,800 in recoverable A/R if escalated this week" },
-      { priority: "high",     text: "Behavioral Health DSO at 48 days driven by incomplete auth documentation — MBHO carve-outs need separate billing workflows.", impact: "Resolving BH auth issues reduces BH DSO by est. 12–18 days" },
-      { priority: "medium",   text: "Configure automated 30-day follow-up alerts for all Cigna and Medicaid claims in your billing system.", impact: "Prevents DSO from exceeding 45-day benchmark" },
+      { priority: "critical", text: "ESWL appeal for Douglas Mackenzie (UHC, $3,200) — clinical documentation package ready, submit Level 1 appeal by Friday.", impact: "$3,200 at immediate risk; retroactive auth success ~38% with complete docs" },
+      { priority: "high",     text: "Urodynamics DSO 44 days driven by auth denials — add 51726/51727 to the prior authorization checklist for all commercial plans.", impact: "Reduces auth denial DSO by est. 10–15 days" },
+      { priority: "medium",   text: "Configure 30-day automated follow-up alerts for all Medicaid and Aetna urology claims in the billing system.", impact: "Prevents DSO exceeding 45-day MGMA benchmark" },
     ],
   },
 
@@ -134,22 +134,22 @@ const KPI_DETAILS: Record<KPIId, KPIDetail> = {
       { name: "Cigna",               value:  68, unit: "", color: "#F59E0B" },
     ],
     specialtyBreakdown: [
-      { name: "Family Medicine",    value: 421, unit: "claims" },
-      { name: "Preventive Care",    value: 201, unit: "claims" },
-      { name: "Urgent & Emergency", value: 136, unit: "claims" },
-      { name: "Behavioral Health",  value:  89, unit: "claims" },
+      { name: "Office Visits (E&M)",          value: 398, unit: "claims" },
+      { name: "Cystoscopy / Endoscopy",       value: 214, unit: "claims" },
+      { name: "PSA & Lab Tests",              value: 142, unit: "claims" },
+      { name: "Surgical (ESWL/TURP/Biopsy)", value:  93, unit: "claims" },
     ],
     relatedClaims: [
-      { id: "CLM-2024-0911", patient: "Angela Foster",   amount: "$320", status: "Approved", issue: "Clean — paid 12 days from submission" },
-      { id: "CLM-2024-0909", patient: "Raymond Torres",  amount: "$485", status: "Pending",  issue: "Under review — Medicare, Day 8" },
-      { id: "CLM-2024-0905", patient: "Lisa Hoffman",    amount: "$275", status: "Approved", issue: "Clean — paid 10 days from submission" },
-      { id: "CLM-2024-0901", patient: "Marcus Webb",     amount: "$640", status: "Pending",  issue: "Under review — UHC, Day 4" },
-      { id: "CLM-2024-0898", patient: "Nina Patel",      amount: "$195", status: "Denied",   issue: "CO-11: ICD-10 mismatch — resubmit required" },
+      { id: "CLM-2024-0911", patient: "Arthur Pemberton",  amount: "$145", status: "Approved", issue: "Clean — 99213 + N41.1 (Prostatitis) paid Day 11" },
+      { id: "CLM-2024-0909", patient: "Walter Brinkworth", amount: "$380", status: "Pending",  issue: "52000 + N40.1 under review — UHC, Day 6" },
+      { id: "CLM-2024-0905", patient: "Larry McIntyre",    amount: "$220", status: "Approved", issue: "Clean — 99214 + C61 (Prostate cancer) paid Day 9" },
+      { id: "CLM-2024-0901", patient: "Thomas Rafferty",   amount: "$1,240", status: "Pending", issue: "52332 + N20.1 (Ureteral stone) pending, Day 4" },
+      { id: "CLM-2024-0898", patient: "Marcus Thornton",   amount: "$380", status: "Approved", issue: "Clean — 52000 + R31.0 (Hematuria) paid Day 14" },
     ],
     actions: [
-      { priority: "medium", text: "Volume approaching staffing adequacy threshold (900/mo). Pre-plan for +6% volume increase in Q3.", impact: "Prevents denial rate increase from bandwidth constraints" },
-      { priority: "medium", text: "Medicare volume (37% of claims) trending up — confirm NPI enrollment is current for all rendering providers.", impact: "Avoids CO-31 denials (provider not enrolled)" },
-      { priority: "low",    text: "BH volume (89 claims) growing — confirm all BH providers have credentialing on file with carve-out payers.", impact: "Maintains BH billing eligibility as volume grows" },
+      { priority: "medium", text: "Surgical procedure volume (93/mo) trending up — verify prior auth checklist covers 50590 (ESWL), 55700 (biopsy), and 52601 (TURP) for all commercial payers.", impact: "Prevents CO-197 auth denials as surgical volume grows" },
+      { priority: "medium", text: "Medicare volume (37% of claims) trending up — confirm NPI enrollment is current for all rendering urologists and mid-levels.", impact: "Avoids CO-31 denials (provider not enrolled at Medicare)" },
+      { priority: "low",    text: "PSA lab volume (142 claims/mo) — confirm Medicare G0103 vs. CPT 84153 billing choice is documented in the annual wellness workflow.", impact: "Prevents recurring CO-50 PSA denials under Medicare LCD L36012" },
     ],
   },
 
@@ -169,22 +169,22 @@ const KPI_DETAILS: Record<KPIId, KPIDetail> = {
       { name: "BlueCross BlueShield",value: 1200, unit: "$", color: "#FEF08A" },
     ],
     specialtyBreakdown: [
-      { name: "Behavioral Health",  value: 10450, unit: "$" },
-      { name: "Urgent & Emergency", value:  7230, unit: "$" },
-      { name: "Family Medicine",    value:  4100, unit: "$" },
-      { name: "Preventive Care",    value:  2400, unit: "$" },
+      { name: "Surgical (ESWL / TURP)",      value: 9840, unit: "$" },
+      { name: "Cystoscopy / Biopsy",         value: 7120, unit: "$" },
+      { name: "Office Visits + Labs",        value: 4120, unit: "$" },
+      { name: "Imaging (CT Urogram)",        value: 3100, unit: "$" },
     ],
     relatedClaims: [
-      { id: "CLM-2024-0782", patient: "Patricia Huang",  amount: "$1,840", status: "Denied", issue: "CO-11 — BH ICD-10 mismatch, appeal Day 22" },
-      { id: "CLM-2024-0771", patient: "Samuel Green",    amount: "$2,240", status: "Denied", issue: "CO-57 — Medicaid prior auth missing, Day 31" },
-      { id: "CLM-2024-0764", patient: "Teresa Morgan",   amount: "$980",   status: "Denied", issue: "CO-4 — Modifier error, corrected claim ready" },
-      { id: "CLM-2024-0751", patient: "Andre Jackson",   amount: "$1,620", status: "Denied", issue: "CO-50 — ED 99284 medical necessity, Day 18" },
-      { id: "CLM-2024-0740", patient: "Kwan Li",         amount: "$1,100", status: "Denied", issue: "CO-29 — UHC timely filing, appeal Day 44" },
+      { id: "CLM-2024-0782", patient: "Douglas Mackenzie",  amount: "$3,200", status: "Denied", issue: "CO-197 — ESWL no prior auth, UHC appeal Day 18" },
+      { id: "CLM-2024-0771", patient: "Frank Gustavsson",   amount: "$780",   status: "Denied", issue: "CO-197 — Cystoscopy with biopsy, auth missing, Day 24" },
+      { id: "CLM-2024-0764", patient: "Harold Pennington",  amount: "$220",   status: "Denied", issue: "CO-97 — Modifier -25 missing, corrected claim ready" },
+      { id: "CLM-2024-0751", patient: "Norman Sinclair",    amount: "$890",   status: "Denied", issue: "CO-50 — Prostate biopsy medical necessity, Day 14" },
+      { id: "CLM-2024-0740", patient: "Vincent Esposito",   amount: "$52",    status: "Denied", issue: "CO-50 — PSA medical necessity, Medicare LCD, Day 31" },
     ],
     actions: [
-      { priority: "critical", text: "$9,240 in Medicaid denials — 3 due to missing prior auth documentation that exists in the chart. Submit appeals with auth records by Friday.", impact: "Recovers 38% of at-risk revenue this week" },
-      { priority: "high",     text: "CO-11 (ICD-10 mismatch) pattern across BH claims — review Anita Patel's coding on all Behavioral Health claims from April.", impact: "Prevents $3,200/mo in recurring BH denials" },
-      { priority: "medium",   text: "CO-29 timely filing denial for Kwan Li (UHC, Day 44) — appeal window closes in 46 days. File Level 1 appeal immediately.", impact: "$1,100 at immediate risk of write-off" },
+      { priority: "critical", text: "$9,840 in surgical denials — ESWL and cystoscopy with biopsy CO-197 auth denials. Submit Level 1 appeals with clinical documentation packages by Friday.", impact: "Recovers 38–42% of at-risk surgical revenue this week" },
+      { priority: "high",     text: "CO-11 pattern: cystoscopy claims submitted with UTI diagnosis (N39.0) instead of hematuria (R31.0) — 6 correctable denials across 3 providers.", impact: "Prevents ~$2,280/mo in recurring CO-11 cystoscopy denials" },
+      { priority: "medium",   text: "PSA medical necessity pattern: 3 CO-50 denials from Medicare for 84153 billed with Z00.00 — implement G0103 billing template for annual screening.", impact: "Eliminates recurring Medicare PSA denials (~$156/mo)" },
     ],
   },
 };
@@ -205,43 +205,43 @@ const TODAY_PRIORITIES: Priority[] = [
   {
     id: "p1",
     urgency: "critical",
-    title: "9 CO-11 appeals — deadline in 14 days",
-    detail: "ICD-10 mismatch denials across BH and urgent care. Appeal window closes May 31.",
-    dueLabel: "Due May 31",
-    amount: "$8,420",
+    title: "6 CO-11 cystoscopy denials — appeal deadline in 21 days",
+    detail: "Cystoscopy (52000) billed with N39.0 (UTI) instead of R31.0 (Gross Hematuria). CO-11 auto-denied by BlueCross and UHC. Corrected claims ready for resubmission.",
+    dueLabel: "Due June 10",
+    amount: "$2,280",
     roles: ["admin", "billing-manager", "medical-biller"],
   },
   {
     id: "p2",
     urgency: "high",
-    title: "Medicaid DSO at 52 days — 3 accounts ready for escalation",
-    detail: "Three accounts > 50 days with no response. Eligible for secondary billing or state ombudsman.",
-    dueLabel: "Escalate today",
-    amount: "$14,800",
+    title: "ESWL Level 1 appeal — Douglas Mackenzie, UHC",
+    detail: "CO-197 denial: $3,200 ESWL prior auth missing. Clinical documentation package complete. Submit Level 1 appeal by Friday to preserve 90-day appeal window.",
+    dueLabel: "Submit by Friday",
+    amount: "$3,200",
     roles: ["admin", "billing-manager"],
   },
   {
     id: "p3",
     urgency: "high",
-    title: "14 claims missing modifier documentation",
-    detail: "Modifier -25 required for same-day E&M + procedure pairs. Resubmit before timely filing deadline.",
+    title: "4 claims missing Modifier -25 — E&M + urology procedure same day",
+    detail: "E&M (99213/99214) billed same day as cystoscopy or TURP without Modifier -25. UHC and Aetna bundling E&M into procedure payment. Resubmit before timely filing deadline.",
     dueLabel: "Resubmit by EOD",
-    amount: "$6,230",
+    amount: "$1,680",
     roles: ["admin", "billing-manager", "medical-biller", "coder"],
   },
   {
     id: "p4",
     urgency: "medium",
-    title: "UHC new prior auth requirements — effective June 1",
-    detail: "CPT 97110, 97530, 90837 require pre-authorization starting next month. Update intake workflows.",
+    title: "Aetna new CT urogram auth requirement — effective June 1",
+    detail: "Aetna adding CPT 74177 (CT A/P) to prior authorization list for urology hematuria workups. Update scheduling workflow and intake checklist before June 1.",
     dueLabel: "Update by June 1",
     roles: ["admin", "billing-manager", "front-desk"],
   },
   {
     id: "p5",
     urgency: "info",
-    title: "May CCR improved +6% vs April — Family Medicine leading",
-    detail: "Clean claim rate reached 88%, best month since launch. Family Medicine at 91% first-pass rate.",
+    title: "May CCR improved +6% vs April — Cystoscopy coding templates working",
+    detail: "Clean claim rate reached 88%, best month since launch. Hematuria coding templates reduced CO-11 denials on cystoscopy claims by 43% vs. March baseline.",
     dueLabel: "Performance insight",
     roles: ["admin", "billing-manager", "provider"],
   },
@@ -249,7 +249,7 @@ const TODAY_PRIORITIES: Priority[] = [
 
 // ─── Helper components ────────────────────────────────────────────────────────
 
-function SparkLine({ data, color, gradId }: { data: number[]; color: string; gradId: string }) {
+function SparkLine({ data, color, gradId }: { data: readonly number[]; color: string; gradId: string }) {
   const min = Math.min(...data);
   const max = Math.max(...data);
   const range = max - min || 1;
@@ -709,7 +709,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Billing Overview</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Greenfield Family Medicine · May 2024</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Northgate Urology Associates · May 2024</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium px-3 py-1.5 rounded-full">

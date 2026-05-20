@@ -25,11 +25,11 @@ interface Props {
 const FALLBACK_PAYERS = ["BlueCross", "Medicare", "Medicaid", "Aetna", "UnitedHealth", "Humana", "Cigna", "Other"];
 
 const EXAMPLES: { label: string; cpt: string; icd10: string; tag: "error" | "ok" }[] = [
-  { label: "Fracture + E&M mismatch", cpt: "99213", icd10: "S92.501A", tag: "error" },
-  { label: "Arthroscopy + URI mismatch", cpt: "29881", icd10: "J06.9", tag: "error" },
-  { label: "Wellness + E&M mismatch", cpt: "99213", icd10: "Z00.00", tag: "error" },
-  { label: "Shoulder Scope + Knee Dx", cpt: "29827", icd10: "M17.11", tag: "error" },
-  { label: "Clean preventive claim", cpt: "99396", icd10: "Z00.00", tag: "ok" },
+  { label: "Cystoscopy + UTI only (mismatch)", cpt: "52000", icd10: "N39.0",  tag: "error" },
+  { label: "TURP + knee diagnosis (mismatch)", cpt: "52601", icd10: "M17.11", tag: "error" },
+  { label: "PSA + wellness exam (mismatch)",   cpt: "84153", icd10: "Z00.00", tag: "error" },
+  { label: "Cystoscopy + hematuria (clean)",   cpt: "52000", icd10: "R31.0",  tag: "ok" },
+  { label: "ESWL + kidney stone (clean)",      cpt: "50590", icd10: "N20.0",  tag: "ok" },
 ];
 
 const PATIENT_NAMES = [

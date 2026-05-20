@@ -95,7 +95,7 @@ export function computeHealthScore(params: {
   ));
 
   const hasModifierError = errors.some(e =>
-    e.field === "modifier" || e.title?.toLowerCase().includes("modifier")
+    e.field === "modifier" || e.message?.toLowerCase().includes("modifier")
   );
   const needsModifier = MODIFIER_SENSITIVE_CPTS.has(cpt);
   const modifierAccuracy = hasModifierError ? 35 :

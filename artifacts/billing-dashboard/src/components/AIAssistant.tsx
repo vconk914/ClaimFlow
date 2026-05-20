@@ -11,96 +11,91 @@ interface AIResponse {
 
 const RESPONSE_LIBRARY: AIResponse[] = [
   {
-    keywords: ["modifier", "-25", "25", "same day", "procedure", "e&m"],
+    keywords: ["cystoscopy", "52000", "52204", "52332", "bladder scope", "cysto"],
     type: "warning",
-    message: "Modifier -25 is required when an E/M service (e.g., 99213) is billed on the same day as a minor procedure (e.g., 17110 wart removal). The modifier certifies that a 'significant, separately identifiable' E/M service was performed. Without it, Medicare and most commercial payers bundle the E/M into the procedure payment. Document the distinct clinical decision-making in the encounter note.",
+    message: "Cystoscopy (CPT 52000, 52204, 52332) requires a genitourinary indication as the primary ICD-10 code. The most common indications are R31.0 (Gross Hematuria), N40.1 (BPH with LUTS), N30.10 (Interstitial Cystitis), or N20.1 (Ureteral Calculus). Billing cystoscopy with an unrelated diagnosis (e.g., J06.9 URI, M54.5 back pain) triggers a CO-11 auto-denial. Most commercial payers also require prior authorization for outpatient cystoscopy — verify auth status before the procedure is scheduled.",
   },
   {
-    keywords: ["no-fault", "no fault", "pip", "nf", "mvA", "motor vehicle", "accident"],
+    keywords: ["psa", "84153", "84154", "prostate antigen", "prostate cancer screen"],
     type: "warning",
-    message: "New York No-Fault (Insurance Law §5106) requires medical bills to be submitted within 30 calendar days of the date of service. This deadline is absolute — there are no waivers, extensions, or appeal paths for late-filed no-fault bills. Best practice: set an internal billing SLA of 25 days to account for processing delays. The fee schedule is set by the NY DFS Workers' Compensation Medical Fee Schedule.",
+    message: "Medicare covers two distinct PSA benefits — and using the wrong one results in denial. (1) Annual PSA Screening for beneficiaries age 50+: bill HCPCS G0103 with ICD-10 Z12.5 — covered at 100% with $0 patient cost-sharing. (2) Diagnostic PSA ordered due to urological symptoms or abnormal DRE: bill CPT 84153 with a qualifying diagnosis such as N40.1 (BPH with LUTS), R35.0 (Urinary Frequency), or R31.0 (Hematuria) per LCD L36012. Billing CPT 84153 with Z00.00 (Annual Exam) results in a CO-50 denial.",
   },
   {
-    keywords: ["authorization", "auth", "prior auth", "preauth", "units"],
-    type: "warning",
-    message: "Prior authorization defines the maximum units or visits approved for payment. Rendering services beyond the authorized limit results in a CO-197 denial (precertification/authorization absent). Request a Continuation of Care (COC) authorization when 75% of authorized visits are used. Most payers require 48–72 hours for COC decisions — never wait until the last authorized visit.",
-  },
-  {
-    keywords: ["behavioral health", "therapy", "90837", "90834", "psychotherapy", "mental health"],
+    keywords: ["hematuria", "blood in urine", "r31", "gross hematuria", "microscopic hematuria"],
     type: "info",
-    message: "CPT 90837 (60-min psychotherapy) and 90834 (45-min) require a DSM-5 qualifying mental health diagnosis in the ICD-10 F01–F99 range. Submitting with a physical medicine diagnosis (e.g., J06.9 URI, M54.5 back pain) will trigger a CO-11 denial. Also verify whether the patient's behavioral health benefits are carved out to a separate managed behavioral health organization (MBHO) — a common reason for claim rejections.",
+    message: "Hematuria workup billing has two key requirements: (1) Cystoscopy (52000) for lower tract evaluation — use R31.0 (Gross Hematuria) or R31.1 (Microscopic Hematuria) as primary ICD-10. (2) CT Urogram (74177) for upper tract evaluation — most commercial payers including Aetna and UHC require prior authorization for CT urogram in hematuria workup. Always obtain auth before imaging. AUA guidelines recommend concurrent upper and lower tract evaluation for gross hematuria — both procedures may be billed on the same date with separate CPT codes.",
   },
   {
-    keywords: ["orthopedic", "surgery", "rotator", "shoulder", "knee", "arthroscopy", "29827"],
+    keywords: ["bph", "prostate", "n40", "lower urinary tract", "luts", "voiding"],
+    type: "info",
+    message: "BPH (N40.0/N40.1) billing guidance: N40.0 = BPH without LUTS (frequency, nocturia, urgency absent), N40.1 = BPH with LUTS (use when the patient has documented urinary symptoms — more specific and supports higher E&M levels). For TURP (52601): prior authorization is required from most commercial payers, and N40.1 must appear as the primary diagnosis. For same-day office visit + cystoscopy: append Modifier -25 to the E&M code to prevent NCCI bundling.",
+  },
+  {
+    keywords: ["eswl", "lithotripsy", "kidney stone", "50590", "calculus", "renal stone"],
     type: "warning",
-    message: "Surgical CPT codes must be paired with an anatomically consistent ICD-10 code. CPT 29827 (rotator cuff repair) requires a shoulder diagnosis (M75.xxx, S46.xxx) — not a knee diagnosis (M17.xxx). Payers use automated edits to detect site mismatches and auto-deny. For high-cost surgeries, always verify that the pre-operative diagnosis matches the procedure code before submission.",
+    message: "ESWL (CPT 50590) requires: (1) A kidney stone diagnosis — N20.0 (Calculus of Kidney), N20.1 (Calculus of Ureter), or N21.0 (Bladder Stone) as the primary ICD-10. ESWL billed without a stone diagnosis will be auto-denied CO-11. (2) Prior authorization from all major commercial payers and many Medicare Advantage plans — obtain auth 3–5 business days before the procedure. (3) Clinical documentation of stone size (>4mm), laterality, and location (renal pelvis vs. proximal/distal ureter) to support medical necessity. Missing auth results in CO-197 denial with no payment fallback.",
   },
   {
-    keywords: ["preventive", "wellness", "annual", "99396", "z00", "z code"],
-    type: "info",
-    message: "ACA-mandated preventive visits (CPT 99381–99397) require a Z00.xx code as the primary ICD-10 to preserve $0 patient cost-sharing under §2713. Using a chronic disease code (e.g., E11.9, I10) as primary converts the visit to a sick visit and triggers a payer downcode to an E/M code. Chronic conditions being managed at the visit should be listed as secondary diagnoses.",
-  },
-  {
-    keywords: ["medicare", "cms", "ncci", "bundling", "bundle"],
-    type: "info",
-    message: "Medicare's National Correct Coding Initiative (NCCI) contains over 235,000 code pairs that are automatically bundled during adjudication. Unbundling — billing both components of a bundled pair — results in denial. Modifier -59 (distinct procedural service) can override some NCCI edits, but it must be supported by documentation showing a separate service, patient encounter, or anatomical site.",
-  },
-  {
-    keywords: ["icd-10", "icd10", "diagnosis", "dx code", "specificity"],
+    keywords: ["catheter", "foley", "51701", "51702", "51703", "bladder catheter", "retention"],
     type: "tip",
-    message: "ICD-10-CM codes should reflect the highest level of specificity supported by the medical record. Unspecified codes (those ending in .9 or .X) increase audit risk and may trigger requests for additional documentation. For injury codes, use the 7th character extension: A (initial encounter), D (subsequent), S (sequela). Specificity also affects MS-DRG grouping and case-mix index for inpatient claims.",
+    message: "Catheter insertion CPT codes (51701–51703) require a diagnosis that directly establishes medical necessity for catheterization. Use R33.9 (Retention of Urine, Unspecified) or R33.8 (Other Retention of Urine) for urinary retention cases. N40.1 (BPH with LUTS causing retention) is also appropriate. Avoid using Z48.89 (Post-Procedure Aftercare) as the sole diagnosis — it does not convey the active pathological indication for catheter placement and will trigger a CO-50 medical necessity denial from Medicare.",
   },
   {
-    keywords: ["workers comp", "workers compensation", "wc", "work injury"],
-    type: "info",
-    message: "Workers' compensation claims require specific accident documentation: date of injury, employer name, employer address, claim number, and adjuster contact. The bill form may differ by state (e.g., CMS-1500 vs. state-specific forms). Fee schedules vary by state — never submit workers' comp claims using standard charge master rates. Most states require submission within 45–90 days of service.",
-  },
-  {
-    keywords: ["denial", "co-11", "co11", "diagnosis inconsistent"],
+    keywords: ["urodynamics", "51726", "51727", "cystometrogram", "urodynamic", "incontinence", "n39"],
     type: "warning",
-    message: "CO-11 (diagnosis inconsistent with procedure) is one of the most common denial codes. The payer's editing system detected a mismatch between the CPT procedure code and the ICD-10 diagnosis code. Common causes: (1) anatomic site mismatch, (2) procedure requires a different diagnosis category, (3) specialty mismatch. Resolution: review NCCI edits for the CPT code and verify ICD-10 code category requirements.",
+    message: "Complex urodynamic testing (CPT 51726, 51727) requires: (1) An incontinence or voiding dysfunction diagnosis — N39.3 (Stress), N39.41 (Urge), N39.46 (Mixed Incontinence), R33.9 (Retention), or N30.10 (Interstitial Cystitis). (2) Prior authorization from BlueCross BlueShield, Aetna, and most commercial payers — typically requires documentation of failed conservative treatment (6+ weeks of pelvic floor PT). (3) Documentation of the specific clinical question the urodynamics will answer per AUA/SUFU guidelines. Auth denial is the #1 reason urodynamic claims are denied in urology practices.",
   },
   {
-    keywords: ["co-29", "co29", "timely filing", "time limit", "deadline"],
+    keywords: ["prostate biopsy", "55700", "55706", "biopsy", "needle biopsy", "r97"],
     type: "warning",
-    message: "CO-29 (time limit for filing expired) indicates the claim was received after the payer's timely filing deadline. Most commercial payers require submission within 90–365 days of service. Medicare requires 12 months (1 calendar year) from the date of service. No-fault payers (NY) require 30 days. Prevention: configure practice management system alerts for claims approaching the timely filing deadline.",
+    message: "Prostate biopsy (CPT 55700, 55706) medical necessity hinges on the ICD-10 code. Use R97.20 (Elevated PSA) when PSA > 4.0 ng/mL drove the biopsy decision — this is the code payers recognize as the primary biopsy indication. D29.1 (Benign Neoplasm of Prostate) alone is insufficient — Cigna and other commercial payers require an elevated-risk indicator like R97.20 or a documented abnormal DRE finding. Attach the PSA lab result to the claim as supporting documentation for any PSA > 4.0 ng/mL case. Cigna Clinical Policy Bulletin and most commercial LCDs require elevated PSA, abnormal DRE, or PI-RADS ≥3 MRI finding for biopsy coverage.",
   },
   {
-    keywords: ["er", "emergency", "urgent care", "99283", "99281", "99284", "ed visit"],
+    keywords: ["modifier", "-25", "25", "same day", "e&m", "office visit and procedure"],
+    type: "warning",
+    message: "Modifier -25 is required whenever an E&M service (99213, 99214, etc.) is billed on the same day as a urology procedure (cystoscopy, urodynamics, TURP). Without it, NCCI editing rules bundle the E&M into the procedure payment — resulting in CO-97 denial. The encounter note must document a clearly separate E&M component (chief complaint, history, assessment, plan for non-procedural issues) distinct from the procedure pre/post-operative evaluation. UHC, Aetna, and BlueCross all enforce this bundling edit in urology claims.",
+  },
+  {
+    keywords: ["authorization", "auth", "prior auth", "co-197", "co197", "precertification"],
+    type: "warning",
+    message: "CO-197 (Precertification/Authorization Absent) is the leading denial code in urology practices. Procedures requiring authorization from most commercial payers include: ESWL (50590), cystoscopy with biopsy (52204), urodynamic testing (51726/51727), CT urogram (74177), TURP (52601), and prostate biopsy (55700). Obtain authorization 3–7 business days before any scheduled procedure. If denied CO-197: submit a retroactive authorization request immediately and file a Level 1 appeal within the payer's appeal window (typically 90–180 days).",
+  },
+  {
+    keywords: ["denial", "co-11", "co11", "diagnosis inconsistent", "mismatch"],
+    type: "warning",
+    message: "CO-11 (Diagnosis Inconsistent with Procedure) is commonly triggered in urology by: (1) Cystoscopy (52000) billed with UTI (N39.0) instead of Hematuria (R31.0) or BPH (N40.1). (2) TURP (52601) billed without a prostate pathology diagnosis. (3) ESWL (50590) billed without a calculus diagnosis (N20.x, N21.0). (4) PSA (84153) billed with a non-urological primary diagnosis. Resolution: identify the anatomically correct ICD-10 for the procedure performed, resubmit as a corrected claim within the payer's timely correction window.",
+  },
+  {
+    keywords: ["medicare", "lcd", "local coverage", "cms", "ncci", "bundling"],
     type: "info",
-    message: "ED visit coding (99281–99285) is based on medical decision-making complexity and resources required. The presenting problem severity must align with the E/M level billed. For No-Fault (NY/FL PIP) patients, document the mechanism of injury, clinical findings, and all tests ordered. Independent Medical Examinations (IMEs) are common for MVA-related ED claims — thorough documentation is critical.",
+    message: "Key Medicare coverage policies for urology: (1) LCD L36012 covers diagnostic PSA (84153) for documented prostate symptoms — wellness visit (Z00.00) does not qualify. (2) Annual PSA screening: HCPCS G0103 + Z12.5, covered 100% with $0 patient cost-sharing. (3) NCCI edits bundle E&M into same-day urology procedures without Modifier -25. (4) Medicare Advantage plans often have additional authorization requirements beyond traditional Medicare — verify auth requirements by specific plan ID, not just 'Medicare.'",
   },
   {
-    keywords: ["physical therapy", "pt", "ot", "97110", "97530", "occupational therapy"],
+    keywords: ["appeal", "dispute", "reconsideration", "level 1", "level 2"],
     type: "tip",
-    message: "Physical and occupational therapy claims require: (1) a valid order/referral from the treating physician, (2) an authorization number on file before service, and (3) objective functional outcome measures in the clinical note. Track visit counts against the authorization limit in real time — services rendered beyond the authorized limit will not be paid and cannot be billed to the patient without ABN (Medicare) or equivalent notice.",
+    message: "For urology claim appeals: Medicare Level 1 (Redetermination) must be filed within 120 days of the MAC denial. Commercial payers: typically 90–180 days from denial date. Strongest appeal packages for urology include: (1) AUA clinical guideline citation supporting the procedure, (2) operative report with documented indication, (3) PSA lab result or imaging report confirming the medical necessity threshold, and (4) treating physician medical necessity letter. CO-197 auth appeals should also include a retroactive authorization request filed simultaneously with a different department.",
   },
   {
-    keywords: ["appeal", "dispute", "redetermination", "reconsideration"],
+    keywords: ["icd-10", "icd10", "diagnosis", "dx code", "specificity", "code"],
     type: "tip",
-    message: "For Medicare: Level 1 appeal (Redetermination) must be filed within 120 days of the MAC denial. For commercial payers: internal appeal typically required within 90–180 days of denial. Strengthen appeals with: (1) medical necessity statement from the treating provider, (2) clinical literature supporting the service, (3) prior auth documentation if applicable. Resubmission with a corrected code is faster than appeal when the error is a coding mistake.",
-  },
-  {
-    keywords: ["documentation", "medical necessity", "note", "record"],
-    type: "tip",
-    message: "Medical necessity is the payer's primary criterion for payment. For every claim, the medical record must contain: (1) a chief complaint or reason for visit, (2) relevant history and physical examination, (3) assessment/diagnosis, and (4) a treatment plan. For E/M services, documentation must support the billed level under either the 1995, 1997, or (post-2021) Medical Decision-Making guidelines.",
+    message: "Urology ICD-10 specificity tips: N40.0 = BPH without LUTS, N40.1 = BPH with LUTS (code N40.1 when symptoms are present — more specific and supports higher E&M levels). For hematuria: R31.0 = Gross Hematuria, R31.1 = Microscopic Hematuria — avoid R31.9 (Unspecified) when clinical documentation supports the specific type. For kidney stones: N20.0 = Renal Calculus, N20.1 = Ureteral Calculus — use the specific code matching the stone location documented in imaging.",
   },
   {
     keywords: ["score", "health score", "risk", "denial risk"],
     type: "info",
-    message: "The Claim Health Score (0–100) reflects the overall quality and payability of the claim. Scores above 85 indicate low denial risk. Scores below 65 suggest significant rework is needed before submission. The score accounts for CPT/ICD compatibility, modifier accuracy, payer-specific rules, specialty requirements, and documentation completeness indicators. Submitting claims with scores below 65 significantly increases denial rates.",
+    message: "The Claim Health Score (0–100) reflects overall claim payability. Scores above 85 indicate low denial risk. In urology, common score-lowering factors are: (1) Non-urological diagnosis with a urology procedure (CPT/ICD-10 mismatch), (2) Missing Modifier -25 on E&M + same-day procedure, (3) No authorization number on file for auth-required procedures, (4) PSA (84153) billed with wellness or non-prostate diagnosis. Address red flags before submission to maximize first-pass acceptance rate.",
   },
 ];
 
 const PROACTIVE_TIPS = [
-  "Modifier -25 is required when E/M and procedure codes are billed on the same date of service.",
-  "NY No-Fault bills must reach the insurer within 30 calendar days — no exceptions.",
-  "Behavioral health CPT codes require a DSM-5 F-code as the primary diagnosis.",
-  "Preventive visit codes (99381–99397) require Z00.xx as primary ICD-10 — not chronic disease codes.",
-  "Verify prior authorization before rendering PT/OT services beyond the first authorized episode.",
-  "Surgical CPT codes must be anatomically consistent with the ICD-10 diagnosis site.",
-  "CO-11 denials (diagnosis inconsistent) are preventable with pre-submission CPT/ICD compatibility checks.",
-  "Medicare NCCI edits bundle E/M into same-day minor procedures without Modifier -25.",
+  "Cystoscopy (52000) requires R31.0 (Hematuria) or N40.1 (BPH) as primary ICD-10 — not UTI (N39.0).",
+  "Modifier -25 is required when E&M and a urology procedure are billed on the same date of service.",
+  "ESWL (50590) requires prior authorization from UHC, Aetna, and most commercial payers.",
+  "For Medicare PSA: annual screening = G0103 + Z12.5. Diagnostic PSA = 84153 + symptomatic diagnosis.",
+  "Prostate biopsy (55700) requires R97.20 (Elevated PSA) — not D29.1 (Benign Neoplasm) alone.",
+  "Urodynamic testing (51726/51727) requires prior auth and documentation of failed pelvic floor PT.",
+  "CO-11 cystoscopy denials are preventable: always verify the diagnosis reflects the actual indication.",
+  "CO-197 is the #1 urology denial — obtain authorization 3–7 days before any scheduled procedure.",
 ];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -201,10 +196,10 @@ export default function AIAssistant() {
   }
 
   const QUICK_QUESTIONS = [
-    "When is Modifier -25 required?",
-    "What is the NY No-Fault 30-day rule?",
-    "How do I fix a CO-11 denial?",
-    "What ICD-10 codes work with psychotherapy?",
+    "When is Modifier -25 required for urology?",
+    "How do I fix a cystoscopy CO-11 denial?",
+    "PSA billing rules for Medicare?",
+    "What ICD-10 code does ESWL require?",
   ];
 
   return (

@@ -208,7 +208,7 @@ function AppShell() {
           {/* Practice + Region info */}
           <div className="px-5 py-3 border-b border-sidebar-border">
             <p className="text-xs text-sidebar-foreground/50 uppercase tracking-wide mb-1">Practice</p>
-            <p className="text-xs font-medium text-sidebar-foreground">Greenfield Family Medicine</p>
+            <p className="text-xs font-medium text-sidebar-foreground">Northgate Urology Associates</p>
             <p className="text-xs text-sidebar-foreground/60">NPI: 1234567890</p>
             <div className="mt-2 flex items-center gap-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${dotColor} shrink-0`} />

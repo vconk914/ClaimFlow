@@ -15,29 +15,29 @@ export interface Claim {
 }
 
 export const INITIAL_CLAIMS: Claim[] = [
-  { id: "CLM-2024-001", patient: "Margaret E. Thornton", dob: "1958-03-14", insuranceId: "BCB-4821039", cpt: "99213", icd10: "J06.9", payer: "BlueCross", amount: 145.00, status: "Approved", submittedAt: "2024-05-20T08:14:00Z" },
-  { id: "CLM-2024-002", patient: "Robert L. Harrington", dob: "1972-07-22", insuranceId: "MCR-9932871", cpt: "93000", icd10: "R00.0", payer: "Medicare", amount: 89.50, status: "Approved", submittedAt: "2024-05-20T09:30:00Z" },
-  { id: "CLM-2024-003", patient: "Sandra K. Watkins", dob: "1985-11-03", insuranceId: "AET-7761234", cpt: "99214", icd10: "M54.5", payer: "Aetna", amount: 220.00, status: "Rejected", submittedAt: "2024-05-21T10:05:00Z", rejectionReason: "Missing Modifier" },
-  { id: "CLM-2024-004", patient: "James P. O'Brien", dob: "1963-01-30", insuranceId: "UHC-5548907", cpt: "29881", icd10: "M17.11", payer: "UnitedHealth", amount: 1850.00, status: "Approved", submittedAt: "2024-05-21T11:22:00Z" },
-  { id: "CLM-2024-005", patient: "Linda F. Guerrero", dob: "1990-06-18", insuranceId: "MCD-3310045", cpt: "71046", icd10: "J18.9", payer: "Medicaid", amount: 175.00, status: "Pending", submittedAt: "2024-05-22T08:55:00Z" },
-  { id: "CLM-2024-006", patient: "William T. Chambers", dob: "1948-09-05", insuranceId: "MCR-1192038", cpt: "99213", icd10: "E11.9", payer: "Medicare", amount: 145.00, status: "Rejected", submittedAt: "2024-05-22T13:40:00Z", rejectionReason: "Mismatched ICD-10 Code" },
-  { id: "CLM-2024-007", patient: "Patricia H. Nguyen", dob: "1977-04-12", insuranceId: "BCB-8824511", cpt: "97110", icd10: "M54.5", payer: "BlueCross", amount: 95.00, status: "Approved", submittedAt: "2024-05-23T09:15:00Z" },
-  { id: "CLM-2024-008", patient: "Charles B. Morrison", dob: "1968-12-28", insuranceId: "AET-9903312", cpt: "99214", icd10: "I10", payer: "Aetna", amount: 220.00, status: "Pending", submittedAt: "2024-05-23T14:20:00Z" },
-  { id: "CLM-2024-009", patient: "Dorothy J. Sinclair", dob: "1955-08-17", insuranceId: "MCR-4467821", cpt: "93000", icd10: "I48.91", payer: "Medicare", amount: 89.50, status: "Approved", submittedAt: "2024-05-24T10:00:00Z" },
-  { id: "CLM-2024-010", patient: "Michael R. Okafor", dob: "1982-02-07", insuranceId: "UHC-7712398", cpt: "29881", icd10: "M23.61", payer: "UnitedHealth", amount: 1850.00, status: "Rejected", submittedAt: "2024-05-24T11:45:00Z", rejectionReason: "Registration Error" },
-  { id: "CLM-2024-011", patient: "Helen A. Bergman", dob: "1974-05-29", insuranceId: "BCB-3319204", cpt: "99213", icd10: "Z00.00", payer: "BlueCross", amount: 145.00, status: "Approved", submittedAt: "2024-05-25T08:30:00Z" },
-  { id: "CLM-2024-012", patient: "Richard D. Estrada", dob: "1961-10-14", insuranceId: "MCD-8821047", cpt: "71046", icd10: "J96.00", payer: "Medicaid", amount: 175.00, status: "Pending", submittedAt: "2024-05-25T15:10:00Z" },
-  { id: "CLM-2024-013", patient: "Barbara C. Kowalski", dob: "1943-03-21", insuranceId: "MCR-6643890", cpt: "99214", icd10: "F32.1", payer: "Medicare", amount: 220.00, status: "Rejected", submittedAt: "2024-05-26T09:55:00Z", rejectionReason: "Missing Prior Auth" },
-  { id: "CLM-2024-014", patient: "Joseph M. Tanaka", dob: "1980-07-09", insuranceId: "AET-1120938", cpt: "97110", icd10: "M62.81", payer: "Aetna", amount: 95.00, status: "Approved", submittedAt: "2024-05-26T13:00:00Z" },
-  { id: "CLM-2024-015", patient: "Nancy L. Fitzgerald", dob: "1969-01-25", insuranceId: "BCB-5510023", cpt: "93000", icd10: "Z82.49", payer: "BlueCross", amount: 89.50, status: "Pending", submittedAt: "2024-05-27T10:30:00Z" },
+  { id: "CLM-2024-001", patient: "Robert J. Hadley",      dob: "1951-03-14", insuranceId: "MCR-4821039", cpt: "99214", icd10: "N40.1",  payer: "Medicare",     amount: 220.00,  status: "Approved", submittedAt: "2024-05-20T08:14:00Z" },
+  { id: "CLM-2024-002", patient: "Marcus D. Thornton",    dob: "1960-07-22", insuranceId: "BCB-9932871", cpt: "52000", icd10: "R31.0",  payer: "BlueCross",    amount: 380.00,  status: "Approved", submittedAt: "2024-05-20T09:30:00Z" },
+  { id: "CLM-2024-003", patient: "Vincent K. Esposito",   dob: "1948-11-03", insuranceId: "MCR-7761234", cpt: "84153", icd10: "Z00.00", payer: "Medicare",     amount: 52.00,   status: "Rejected", submittedAt: "2024-05-21T10:05:00Z", rejectionReason: "Missing Prior Auth" },
+  { id: "CLM-2024-004", patient: "Earl T. Patterson",     dob: "1963-01-30", insuranceId: "MCR-5548907", cpt: "50590", icd10: "N20.0",  payer: "Medicare",     amount: 3200.00, status: "Approved", submittedAt: "2024-05-21T11:22:00Z" },
+  { id: "CLM-2024-005", patient: "Harold S. Kimura",      dob: "1957-06-18", insuranceId: "AET-3310045", cpt: "55700", icd10: "N40.1",  payer: "Aetna",        amount: 890.00,  status: "Pending",  submittedAt: "2024-05-22T08:55:00Z" },
+  { id: "CLM-2024-006", patient: "George M. Nakamura",    dob: "1948-09-05", insuranceId: "MCR-1192038", cpt: "52601", icd10: "N40.1",  payer: "Medicare",     amount: 2850.00, status: "Rejected", submittedAt: "2024-05-22T13:40:00Z", rejectionReason: "Missing Modifier" },
+  { id: "CLM-2024-007", patient: "Dennis R. Walcott",     dob: "1955-04-12", insuranceId: "BCB-8824511", cpt: "51726", icd10: "N39.46", payer: "BlueCross",    amount: 580.00,  status: "Approved", submittedAt: "2024-05-23T09:15:00Z" },
+  { id: "CLM-2024-008", patient: "Thomas B. Rafferty",    dob: "1968-12-28", insuranceId: "UHC-9903312", cpt: "52332", icd10: "N20.1",  payer: "UnitedHealth", amount: 1240.00, status: "Pending",  submittedAt: "2024-05-23T14:20:00Z" },
+  { id: "CLM-2024-009", patient: "Arthur J. Pemberton",   dob: "1955-08-17", insuranceId: "AET-4467821", cpt: "99213", icd10: "N41.1",  payer: "Aetna",        amount: 145.00,  status: "Approved", submittedAt: "2024-05-24T10:00:00Z" },
+  { id: "CLM-2024-010", patient: "Frank D. Gustavsson",   dob: "1950-02-07", insuranceId: "MCR-7712398", cpt: "52204", icd10: "R31.0",  payer: "Medicare",     amount: 780.00,  status: "Rejected", submittedAt: "2024-05-24T11:45:00Z", rejectionReason: "Missing Prior Auth" },
+  { id: "CLM-2024-011", patient: "Larry W. McIntyre",     dob: "1958-05-29", insuranceId: "BCB-3319204", cpt: "99214", icd10: "C61",    payer: "BlueCross",    amount: 220.00,  status: "Approved", submittedAt: "2024-05-25T08:30:00Z" },
+  { id: "CLM-2024-012", patient: "Bernard K. Walsh",      dob: "1945-10-14", insuranceId: "MCD-8821047", cpt: "51702", icd10: "R33.9",  payer: "Medicaid",     amount: 145.00,  status: "Pending",  submittedAt: "2024-05-25T15:10:00Z" },
+  { id: "CLM-2024-013", patient: "Douglas P. Mercer",     dob: "1960-03-21", insuranceId: "AET-6643890", cpt: "74177", icd10: "N20.0",  payer: "Aetna",        amount: 890.00,  status: "Rejected", submittedAt: "2024-05-26T09:55:00Z", rejectionReason: "Missing Prior Auth" },
+  { id: "CLM-2024-014", patient: "Roger E. Castellano",   dob: "1975-07-09", insuranceId: "MCD-1120938", cpt: "99213", icd10: "N39.0",  payer: "Medicaid",     amount: 145.00,  status: "Approved", submittedAt: "2024-05-26T13:00:00Z" },
+  { id: "CLM-2024-015", patient: "Walter C. Brinkworth",  dob: "1962-01-25", insuranceId: "UHC-5510023", cpt: "52000", icd10: "N40.1",  payer: "UnitedHealth", amount: 380.00,  status: "Pending",  submittedAt: "2024-05-27T10:30:00Z" },
 ];
 
 export const DENIAL_REASONS = [
-  { name: "Missing Modifier", value: 28, color: "#3B82F6" },
-  { name: "Mismatched ICD-10", value: 24, color: "#06B6D4" },
-  { name: "Registration Error", value: 18, color: "#8B5CF6" },
-  { name: "Non-covered Service", value: 16, color: "#F59E0B" },
-  { name: "Missing Prior Auth", value: 14, color: "#EC4899" },
+  { name: "Missing Prior Authorization", value: 32, color: "#EF4444" },
+  { name: "Diagnosis/Procedure Mismatch", value: 24, color: "#3B82F6" },
+  { name: "Medical Necessity Not Met",   value: 18, color: "#8B5CF6" },
+  { name: "Missing Modifier (-25/-59)",  value: 15, color: "#F59E0B" },
+  { name: "Timely Filing Exceeded",      value: 11, color: "#06B6D4" },
 ];
 
 export const PAYER_DATA = [
@@ -158,6 +158,38 @@ export const CPT_CODES: Record<string, { description: string; category: string; 
   "97535": { description: "Self-Care / Home Management Training, 15 min", category: "Occupational Therapy", fee: 95 },
   "97537": { description: "Community / Work Reintegration Training, 15 min", category: "Occupational Therapy", fee: 98 },
   "97542": { description: "Wheelchair Management / Propulsion Training, 15 min", category: "Occupational Therapy", fee: 88 },
+  // Urology — Cystoscopy & Endoscopy
+  "52000": { description: "Cystoscopy", category: "Urology", fee: 380 },
+  "52001": { description: "Cystoscopy with Irrigation and Evacuation", category: "Urology", fee: 420 },
+  "52204": { description: "Cystoscopy with Biopsy", category: "Urology", fee: 780 },
+  "52310": { description: "Cystoscopy with Removal of Foreign Body or Calculus", category: "Urology", fee: 620 },
+  "52332": { description: "Cystoscopy with Insertion of Indwelling Ureteral Stent", category: "Urology", fee: 1240 },
+  "52353": { description: "Cystoscopy with Lithotripsy (Ureteral)", category: "Urology", fee: 1480 },
+  // Urology — Prostate
+  "52601": { description: "Transurethral Resection of Prostate (TURP) — First Stage", category: "Urology", fee: 2850 },
+  "52630": { description: "Transurethral Resection, Residual or Regrowth Prostate Tissue", category: "Urology", fee: 2200 },
+  "55700": { description: "Prostate Needle Biopsy — Single or Multiple", category: "Urology", fee: 890 },
+  "55706": { description: "Prostate Needle Biopsy, Transperineal", category: "Urology", fee: 1100 },
+  // Urology — Kidney Stone
+  "50590": { description: "Lithotripsy, Extracorporeal Shock Wave (ESWL)", category: "Urology", fee: 3200 },
+  // Urology — Catheter & Bladder
+  "51700": { description: "Bladder Irrigation — Simple", category: "Urology", fee: 145 },
+  "51701": { description: "Insertion of Non-Indwelling Bladder Catheter", category: "Urology", fee: 98 },
+  "51702": { description: "Insertion of Temporary Indwelling Bladder Catheter — Simple", category: "Urology", fee: 145 },
+  "51703": { description: "Insertion of Temporary Indwelling Bladder Catheter — Complicated", category: "Urology", fee: 198 },
+  // Urology — Urodynamics
+  "51726": { description: "Complex Cystometrogram (Urodynamics)", category: "Urology", fee: 580 },
+  "51727": { description: "Complex Cystometrogram with Voiding Pressure Studies", category: "Urology", fee: 720 },
+  "51736": { description: "Simple Uroflowmetry", category: "Urology", fee: 145 },
+  "51741": { description: "Complex Uroflowmetry with Calibration", category: "Urology", fee: 210 },
+  // Urology — PSA & Labs
+  "84153": { description: "Prostate Specific Antigen (PSA), Total", category: "Laboratory", fee: 52 },
+  "84154": { description: "Prostate Specific Antigen (PSA), Free", category: "Laboratory", fee: 68 },
+  // Urology — Radiology
+  "76872": { description: "Ultrasound, Transrectal (TRUS)", category: "Radiology", fee: 420 },
+  "76770": { description: "Ultrasound, Retroperitoneal — Complete", category: "Radiology", fee: 340 },
+  "76775": { description: "Ultrasound, Retroperitoneal — Limited", category: "Radiology", fee: 220 },
+  "74400": { description: "Urography (IVP) — w/ or w/o KUB", category: "Radiology", fee: 640 },
 };
 
 // ─── ICD-10 Reference Library ─────────────────────────────────────────────────
@@ -217,6 +249,46 @@ export const ICD10_CODES: Record<string, { description: string; category: string
   "K57.30": { description: "Diverticulosis of Large Intestine, w/o Perforation", category: "Gastrointestinal" },
   // Genitourinary
   "N39.0":  { description: "Urinary Tract Infection, Site Not Specified", category: "Genitourinary" },
+  // Urology — Prostate
+  "N40.0":  { description: "Benign Prostatic Hyperplasia without Lower Urinary Tract Symptoms", category: "Urology" },
+  "N40.1":  { description: "Benign Prostatic Hyperplasia with Lower Urinary Tract Symptoms", category: "Urology" },
+  "N40.2":  { description: "Nodular Prostate without Lower Urinary Tract Symptoms", category: "Urology" },
+  "N40.3":  { description: "Nodular Prostate with Lower Urinary Tract Symptoms", category: "Urology" },
+  "N41.0":  { description: "Acute Prostatitis", category: "Urology" },
+  "N41.1":  { description: "Chronic Prostatitis", category: "Urology" },
+  "D29.1":  { description: "Benign Neoplasm of Prostate", category: "Urology" },
+  "C61":    { description: "Malignant Neoplasm of Prostate", category: "Urology" },
+  "R97.20": { description: "Elevated Prostate Specific Antigen [PSA]", category: "Urology" },
+  // Urology — Kidney & Ureter
+  "N20.0":  { description: "Calculus of Kidney", category: "Urology" },
+  "N20.1":  { description: "Calculus of Ureter", category: "Urology" },
+  "N20.2":  { description: "Calculus of Kidney with Calculus of Ureter", category: "Urology" },
+  "N21.0":  { description: "Calculus in Bladder", category: "Urology" },
+  "N13.30": { description: "Hydronephrosis with Obstruction, Unspecified", category: "Urology" },
+  "C64.1":  { description: "Malignant Neoplasm of Right Kidney", category: "Urology" },
+  "C64.2":  { description: "Malignant Neoplasm of Left Kidney", category: "Urology" },
+  // Urology — Hematuria & Voiding
+  "R31.0":  { description: "Gross Hematuria", category: "Urology" },
+  "R31.1":  { description: "Benign Essential Microscopic Hematuria", category: "Urology" },
+  "R31.9":  { description: "Hematuria, Unspecified", category: "Urology" },
+  "R33.8":  { description: "Other Retention of Urine", category: "Urology" },
+  "R33.9":  { description: "Retention of Urine, Unspecified", category: "Urology" },
+  "R35.0":  { description: "Frequency of Micturition", category: "Urology" },
+  "R35.1":  { description: "Nocturia", category: "Urology" },
+  // Urology — Bladder & Incontinence
+  "N30.00": { description: "Acute Cystitis without Hematuria", category: "Urology" },
+  "N30.10": { description: "Interstitial Cystitis (Chronic), without Hematuria", category: "Urology" },
+  "N39.3":  { description: "Stress Urinary Incontinence", category: "Urology" },
+  "N39.41": { description: "Urge Incontinence", category: "Urology" },
+  "N39.46": { description: "Mixed Urinary Incontinence", category: "Urology" },
+  "C67.9":  { description: "Malignant Neoplasm of Bladder, Unspecified", category: "Urology" },
+  // Urology — Scrotal & Other
+  "N43.3":  { description: "Hydrocele, Unspecified", category: "Urology" },
+  "N44.0":  { description: "Torsion of Testis", category: "Urology" },
+  "N45.1":  { description: "Epididymitis", category: "Urology" },
+  // Urology — Screening & Prevention
+  "Z12.5":  { description: "Encounter for Screening, Malignant Neoplasm of Prostate", category: "Urology" },
+  "Z80.42": { description: "Family History of Prostate Cancer", category: "Family History" },
   // Neurological
   "R51.9":  { description: "Headache, Unspecified", category: "Neurological" },
   "G43.909":{ description: "Migraine, Unspecified, Not Intractable", category: "Neurological" },
@@ -491,7 +563,7 @@ export const COMPAT_RULES: CompatRule[] = [
   },
   // CT Abdomen/Pelvis with non-abdominal diagnosis
   {
-    match: (cpt, _, __, icdCat) => ["74177","74178"].includes(cpt) && !["Gastrointestinal","Genitourinary","Emergency","Injury"].includes(icdCat),
+    match: (cpt, _, __, icdCat) => ["74177","74178"].includes(cpt) && !["Gastrointestinal","Genitourinary","Urology","Emergency","Injury"].includes(icdCat),
     severity: "warning",
     message: (_, __, icd, icdD) => `CT Abdomen/Pelvis with "${icdD}" (${icd}) may require additional documentation of abdominal/pelvic indication.`,
     fix: () => "CT Abdomen/Pelvis requires an abdominal or pelvic clinical indication. Use R10.9 (Abdominal Pain), K81.0 (Cholecystitis), K37 (Appendicitis), or R19.00 (Abdominal Mass). Payers typically require prior authorization for CT without a supporting clinical diagnosis.",
@@ -539,11 +611,60 @@ export const COMPAT_RULES: CompatRule[] = [
   },
   // Ultrasound Abdomen with non-abdominal
   {
-    match: (cpt, _, __, icdCat) => cpt === "76700" && !["Gastrointestinal","Genitourinary","Emergency","Cardiovascular"].includes(icdCat),
+    match: (cpt, _, __, icdCat) => cpt === "76700" && !["Gastrointestinal","Genitourinary","Urology","Emergency","Cardiovascular"].includes(icdCat),
     severity: "warning",
     message: (_, __, icd, icdD) => `Abdominal ultrasound (76700) with "${icdD}" (${icd}) may lack a documented abdominal indication.`,
     fix: () => "Abdominal ultrasound requires an abdominal or pelvic clinical indication. Common supporting diagnoses: R10.9 (Abdominal Pain), K81.0 (Cholecystitis), R19.00 (Abdominal Mass), K21.0 (GERD). Document the specific clinical reason the ultrasound was ordered.",
     liveLabel: "Abdominal ultrasound typically requires an abdominal or pelvic indication",
+  },
+  // ─── Urology-Specific Rules ───────────────────────────────────────────────
+  // Cystoscopy with non-urological diagnosis
+  {
+    match: (cpt, _, __, icdCat) => ["52000","52001","52204","52310","52332","52353"].includes(cpt) && !["Urology","Genitourinary"].includes(icdCat),
+    severity: "error",
+    message: (cpt, cptD, icd, icdD) => `CPT ${cpt} (${cptD}) requires a genitourinary diagnosis. "${icdD}" (${icd}) does not support cystoscopy — expect CO-11 denial.`,
+    fix: () => "Cystoscopy requires a urological indication: R31.0 (Gross Hematuria), N40.1 (BPH with LUTS), N30.10 (Interstitial Cystitis), N20.1 (Ureteral Stone), or N21.0 (Bladder Stone). Non-GU diagnoses will result in a CO-11 denial.",
+    liveLabel: "Cystoscopy requires a genitourinary/urology diagnosis (hematuria, BPH, stone)",
+  },
+  // ESWL without a urinary stone diagnosis
+  {
+    match: (cpt, icd) => cpt === "50590" && !["N20.0","N20.1","N20.2","N21.0"].includes(icd),
+    severity: "error",
+    message: (_, __, icd, icdD) => `CPT 50590 (ESWL — Lithotripsy) requires a urinary calculus diagnosis. "${icdD}" (${icd}) does not support this procedure — payers auto-deny without a stone diagnosis.`,
+    fix: () => "ESWL requires a calculus diagnosis: N20.0 (Calculus of Kidney), N20.1 (Calculus of Ureter), N20.2 (Both), or N21.0 (Bladder Stone). Stone size and laterality should be documented in the operative note to support medical necessity.",
+    liveLabel: "ESWL requires a urinary calculus diagnosis (N20.0, N20.1, N21.0)",
+  },
+  // TURP without prostate/BPH diagnosis
+  {
+    match: (cpt, icd) => ["52601","52630"].includes(cpt) && !["N40.0","N40.1","N40.2","N40.3","C61","D29.1"].includes(icd),
+    severity: "error",
+    message: (_, __, icd, icdD) => `CPT 52601 (TURP) requires a prostate pathology diagnosis. "${icdD}" (${icd}) does not support transurethral resection of the prostate — expect a CO-11 denial.`,
+    fix: () => "TURP requires a prostate diagnosis: N40.1 (BPH with LUTS), N40.0 (BPH without LUTS), C61 (Prostate Carcinoma), or D29.1 (Benign Neoplasm of Prostate). Payers auto-deny TURP without a matching prostate pathology diagnosis.",
+    liveLabel: "TURP requires a prostate pathology diagnosis (BPH, prostate cancer)",
+  },
+  // PSA with non-prostate/non-urological primary
+  {
+    match: (cpt, _, __, icdCat) => ["84153","84154"].includes(cpt) && ["Preventive","Mental Health","Musculoskeletal","Respiratory","Cardiovascular","Gastrointestinal"].includes(icdCat),
+    severity: "warning",
+    message: (_, __, icd, icdD) => `PSA test billed with "${icdD}" (${icd}) — Medicare requires a prostate-related diagnosis for diagnostic PSA (84153). For annual screening, use G0103 + Z12.5 instead.`,
+    fix: () => "For diagnostic PSA: use N40.1 (BPH with LUTS), R35.0 (Urinary Frequency), R31.0 (Hematuria), or R97.20 (Elevated PSA follow-up). For Medicare annual PSA screening benefit: bill HCPCS G0103 with Z12.5 — not CPT 84153 with Z00.00.",
+    liveLabel: "Diagnostic PSA requires a prostate-related diagnosis; annual Medicare screening uses G0103 + Z12.5",
+  },
+  // Prostate biopsy without elevated PSA or prostate indication
+  {
+    match: (cpt, icd, _, icdCat) => ["55700","55706"].includes(cpt) && !["N40.0","N40.1","N40.2","N40.3","C61","R97.20","D29.1"].includes(icd) && !["Urology"].includes(icdCat),
+    severity: "warning",
+    message: (cpt, cptD, icd, icdD) => `Prostate biopsy (${cpt} — ${cptD}) billed with "${icdD}" (${icd}) may lack documented medical necessity. Payers require elevated PSA, abnormal DRE, or suspicious imaging finding.`,
+    fix: () => "Use R97.20 (Elevated PSA) if PSA > 4.0 ng/mL drove the biopsy decision. For abnormal DRE with BPH: use N40.1 (BPH with LUTS). For suspected malignancy: use C61 (Prostate Carcinoma). The ICD-10 must reflect the specific indication — not a generic benign prostate code.",
+    liveLabel: "Prostate biopsy requires elevated PSA (R97.20), BPH, or prostate malignancy diagnosis",
+  },
+  // Urodynamics without incontinence or retention
+  {
+    match: (cpt, icd) => ["51726","51727","51728","51729"].includes(cpt) && !["N39.3","N39.41","N39.46","R33.8","R33.9","N30.10"].includes(icd),
+    severity: "warning",
+    message: (_, __, icd, icdD) => `Complex urodynamic testing billed with "${icdD}" (${icd}) — payers require documented incontinence or voiding dysfunction as the primary indication.`,
+    fix: () => "Urodynamic testing (51726–51729) requires an incontinence or voiding disorder diagnosis: N39.3 (Stress Incontinence), N39.41 (Urge Incontinence), N39.46 (Mixed Incontinence), R33.9 (Urinary Retention), or N30.10 (Interstitial Cystitis). Document failed conservative treatment (pelvic floor PT) to support prior authorization.",
+    liveLabel: "Urodynamic testing requires an incontinence or urinary retention diagnosis",
   },
 ];
 
@@ -755,6 +876,48 @@ export const SPECIALTY_CONFIGS: Record<string, SpecialtyConfig> = {
     ],
     cptCodes: ["44950","44970","47562","47600","29881","29827","27447","27130","27236","27759","25600","28450","10060","10061","20610"],
     icd10Codes: ["K37","K35.80","K35.89","K81.0","K81.1","K80.20","K80.00","M17.11","M17.12","M16.11","M75.1","M23.61","S72.001A","S72.002A","S52.001A","S92.501A","S83.511A","S46.011A","Z48.89","T81.40XA"],
+  },
+  "urology": {
+    id: "urology",
+    label: "Urology",
+    color: "blue",
+    description: "Urological procedures and diagnostics — cystoscopy, ESWL, TURP, prostate biopsy, urodynamics, PSA testing, and hematuria workup — all with strict CPT/ICD-10 matching and prior authorization requirements.",
+    checks: [
+      "Cystoscopy (52000/52204) requires a GU diagnosis: R31.0 (Hematuria), N40.1 (BPH), or N20.1 (Ureteral Stone)",
+      "ESWL (50590) requires a calculus diagnosis (N20.0, N20.1, N21.0) and prior authorization",
+      "TURP (52601) requires a prostate pathology diagnosis: N40.1 (BPH with LUTS) or C61",
+      "PSA: Medicare annual screening = G0103 + Z12.5; diagnostic PSA = 84153 + GU diagnosis per LCD L36012",
+      "Prostate biopsy (55700/55706) requires R97.20 (Elevated PSA), abnormal DRE, or suspicious imaging",
+      "Urodynamics (51726/51727) requires incontinence/retention diagnosis + auth + failed conservative treatment documentation",
+      "Modifier -25 required on all same-day E&M + urology procedure pairs to prevent NCCI bundling",
+    ],
+    commonDenials: [
+      "Cystoscopy with UTI (N39.0) instead of Hematuria (R31.0) — CO-11 auto-denial",
+      "ESWL without prior authorization — CO-197 denial, no payment fallback",
+      "PSA (84153) billed with Z00.00 (Annual Exam) — CO-50 Medicare medical necessity denial",
+      "E&M billed same day as cystoscopy without Modifier -25 — CO-97 bundling denial",
+      "Prostate biopsy without elevated PSA or abnormal DRE documentation — CO-50 denial",
+      "CT Urogram (74177) without prior authorization — Aetna, UHC, BlueCross auto-deny",
+      "Urodynamics (51726) without auth or documentation of failed pelvic floor PT — CO-197 denial",
+    ],
+    cptCodes: [
+      "52000","52001","52204","52310","52332","52353",
+      "52601","52630","55700","55706","50590",
+      "51700","51701","51702","51703",
+      "51726","51727","51736","51741",
+      "84153","84154","76872","76770","76775","74400",
+      "74177","74178","99213","99214","99215",
+    ],
+    icd10Codes: [
+      "N40.0","N40.1","N40.2","N40.3",
+      "R31.0","R31.1","R31.9",
+      "N20.0","N20.1","N20.2","N21.0","N13.30",
+      "R97.20","C61","D29.1","N41.0","N41.1",
+      "N39.0","N39.3","N39.41","N39.46",
+      "N30.00","N30.10","R33.8","R33.9","R35.0","R35.1",
+      "C67.9","C64.1","C64.2","N43.3","N44.0","N45.1",
+      "Z12.5","Z80.42",
+    ],
   },
 };
 
