@@ -188,8 +188,8 @@ export default function LandingPage({ onEnterApp }: Props) {
             <div className="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 flex items-center">
               <img src={logoUrl} alt="ClaimFlow" className="h-8 w-auto object-contain" />
             </div>
-            <span className="hidden sm:inline-block text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
-              Healthcare RCM Platform
+            <span className="hidden sm:inline-block text-xs font-medium text-red-600 bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">
+              Urology · Denial Prevention
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -230,17 +230,17 @@ export default function LandingPage({ onEnterApp }: Props) {
             {/* Left: headline */}
             <div className={`transition-all duration-700 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
               <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 mb-6">
-                <Sparkles className="w-3.5 h-3.5 text-blue-300" />
-                <span className="text-white/80 text-xs font-medium">AI-powered Revenue Cycle Management</span>
+                <Sparkles className="w-3.5 h-3.5 text-red-300" />
+                <span className="text-white/80 text-xs font-medium">Urology-Specific · Denial Prevention Platform</span>
               </div>
               <h1 className="text-5xl lg:text-6xl font-black text-white leading-[1.05] mb-6">
-                Clean Claims.<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300">
-                  Faster Payments.
+                Stop Denials<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-300 to-orange-300">
+                  Before They Start.
                 </span>
               </h1>
               <p className="text-white/60 text-lg leading-relaxed mb-8 max-w-lg">
-                ClaimFlow's AI catches denials before they happen — specialty-aware scrubbing, payer-specific rules, and real-time lifecycle tracking for modern billing teams.
+                ClaimFlow is the only denial-prevention platform built specifically for urology billing teams — specialty-aware rules, per-payer risk scoring, and transparent AI guidance so every claim gets paid on the first attempt.
               </p>
               <div className="flex flex-wrap items-center gap-4">
                 <button
@@ -363,38 +363,38 @@ export default function LandingPage({ onEnterApp }: Props) {
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <p className="text-blue-600 text-sm font-bold uppercase tracking-widest mb-3">Platform Capabilities</p>
-            <h2 className="text-4xl font-black text-slate-900 mb-4">Everything you need to<br />maximize reimbursement</h2>
+            <p className="text-red-600 text-sm font-bold uppercase tracking-widest mb-3">Denial Prevention Engine</p>
+            <h2 className="text-4xl font-black text-slate-900 mb-4">Catch every denial risk<br />before it reaches the payer</h2>
             <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-              One unified platform for pre-submission scrubbing, denial management, payer intelligence, and performance analytics.
+              Five purpose-built layers of denial prevention — working together before a single claim leaves your practice.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <FeatureCard
               icon={Brain}
-              title="AI-Powered Scrubbing"
-              desc="GPT-4-powered pre-submission checks catch CPT/ICD-10 conflicts, missing modifiers, and prior auth requirements before they trigger denials."
-              color="bg-blue-600"
+              title="Specialty-Aware Rules"
+              desc="Deep urology CPT/ICD-10 logic built in — cystoscopy pairings, PSA screening rules, ESWL auth requirements, and modifier enforcement by payer."
+              color="bg-red-600"
               delay={0}
             />
             <FeatureCard
               icon={Shield}
-              title="Denial Prevention"
-              desc="Real-time alerts for known payer-specific denial patterns. Specialty-aware rules for Urology, Cardiology, Orthopedics, and more."
-              color="bg-indigo-600"
+              title="Pre-Submission Risk Score"
+              desc="Every claim gets a denial probability score before submission. See which factor is driving risk, the suggested fix, and the estimated reimbursement impact."
+              color="bg-orange-600"
               delay={0.1}
             />
             <FeatureCard
-              icon={MapPin}
-              title="Payer Intelligence"
-              desc="State-specific payer profiles load local market share data, contracted rates, prior auth thresholds, and denial appeal timelines."
+              icon={Zap}
+              title="Payer Behavior Intelligence"
+              desc="Per-payer behavioral profiles — Aetna's modifier strictness, Medicaid's documentation demands, UHC's auth thresholds — applied to every claim automatically."
               color="bg-violet-600"
               delay={0.2}
             />
             <FeatureCard
               icon={GitBranch}
-              title="Claim Lifecycle Tracking"
-              desc="Follow every claim from Draft through Paid with a full audit trail. One-click corrections and resubmissions directly from the timeline."
+              title="Transparent AI Guidance"
+              desc="No black-box recommendations. Every warning shows which rule triggered it, why it matters for this payer, and exactly what to change before submission."
               color="bg-emerald-600"
               delay={0.3}
             />
@@ -407,31 +407,30 @@ export default function LandingPage({ onEnterApp }: Props) {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <p className="text-indigo-600 text-sm font-bold uppercase tracking-widest mb-3">Specialty Intelligence</p>
+              <p className="text-red-600 text-sm font-bold uppercase tracking-widest mb-3">Built for Urology First</p>
               <h2 className="text-4xl font-black text-slate-900 mb-5">
-                Built for your specialty — not just billing in general
+                Deep urology rules —<br />not generic billing logic
               </h2>
               <p className="text-slate-500 text-lg leading-relaxed mb-8">
-                ClaimFlow's specialty modes load discipline-specific CPT code libraries, modifier rules, and denial patterns so your team doesn't need to be coding experts.
+                Every denial pattern, modifier requirement, and payer rule is tuned specifically for urology. Your team gets guidance that knows the difference between N40.0 and N40.1 — and why it matters for reimbursement.
               </p>
               <div className="space-y-3">
                 {[
-                  { icon: "🩺", name: "Urology", tags: ["52000", "55700", "84153", "Modifier -59"] },
-                  { icon: "🫀", name: "Cardiology", tags: ["93000", "99213", "I25.10", "Prior auth"] },
-                  { icon: "🦴", name: "Orthopedics", tags: ["27447", "G-codes", "Workers' comp"] },
-                  { icon: "👨‍⚕️", name: "Family Medicine", tags: ["99213", "99214", "-25 modifier", "Preventive"] },
+                  { cpt: "52000", name: "Cystoscopy", rule: "Must use GU primary diagnosis — R31.0, N40.1, N20.1. CO-11 auto-denial with UTI (N39.0).", severity: "error" },
+                  { cpt: "84153 / G0103", name: "PSA Screening", rule: "Medicare: G0103 + Z12.5. Diagnostic: 84153 + symptomatic dx. Never bill 84153 with Z00.00.", severity: "error" },
+                  { cpt: "50590", name: "ESWL", rule: "Prior auth required by all commercial payers. Stone size, laterality, and location must be documented.", severity: "warning" },
+                  { cpt: "99213–99215", name: "E&M + Procedure", rule: "Modifier -25 required on same-day E&M + urology procedure. NCCI bundling enforced by all payers.", severity: "warning" },
                 ].map(s => (
-                  <div key={s.name} className="flex items-center gap-4 bg-white border border-slate-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                    <span className="text-2xl">{s.icon}</span>
+                  <div key={s.name} className={`flex items-start gap-4 bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow ${
+                    s.severity === "error" ? "border-red-100" : "border-amber-100"
+                  }`}>
+                    <div className={`shrink-0 text-[10px] font-bold px-2 py-1 rounded border mt-0.5 ${
+                      s.severity === "error" ? "bg-red-50 text-red-600 border-red-200" : "bg-amber-50 text-amber-600 border-amber-200"
+                    }`}>{s.cpt}</div>
                     <div className="flex-1">
-                      <p className="font-semibold text-slate-800 text-sm">{s.name}</p>
-                      <div className="flex flex-wrap gap-1.5 mt-1.5">
-                        {s.tags.map(t => (
-                          <span key={t} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">{t}</span>
-                        ))}
-                      </div>
+                      <p className="font-bold text-slate-800 text-sm mb-0.5">{s.name}</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">{s.rule}</p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
                   </div>
                 ))}
               </div>
