@@ -1,49 +1,66 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { X, ChevronRight, ChevronLeft, Sparkles, MapPin } from "lucide-react";
-import { useTour, TOUR_STEPS } from "@/context/TourContext";
+import { useTour } from "@/context/TourContext";
 
-// ── Tooltip position calc ──────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Rect { top: number; left: number; width: number; height: number }
 
-function getTooltipStyle(targetRect: Rect | null, position: string): React.CSSProperties {
-  if (!targetRect) {
-    return { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
-  }
-  const PAD = 16;
-  const TIP_W = 320;
-  const TIP_H = 180;
+// ── Position calc — uses ACTUAL rendered tooltip dimensions ───────────────────
+
+function getTooltipPosition(
+  targetRect: Rect | null,
+  position: string,
+  tipW: number,
+  tipH: number,
+): React.CSSProperties {
+  const PAD = 12;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
+
+  if (!targetRect) {
+    // No target — center in viewport
+    return {
+      position: "fixed",
+      top: Math.round(vh / 2 - tipH / 2),
+      left: Math.round(vw / 2 - tipW / 2),
+    };
+  }
+
+  const clampLeft = (l: number) => Math.max(PAD, Math.min(l, vw - tipW - PAD));
+  const clampTop  = (t: number) => Math.max(PAD, Math.min(t, vh - tipH - PAD));
 
   switch (position) {
     case "right": {
       let left = targetRect.left + targetRect.width + PAD;
-      let top = targetRect.top + targetRect.height / 2 - TIP_H / 2;
-      if (left + TIP_W > vw) left = targetRect.left - TIP_W - PAD;
-      top = Math.max(PAD, Math.min(top, vh - TIP_H - PAD));
+      // Flip to left if it would overflow right edge
+      if (left + tipW > vw - PAD) left = targetRect.left - tipW - PAD;
+      // Keep left >= 0
+      left = Math.max(PAD, left);
+      const top = clampTop(targetRect.top + targetRect.height / 2 - tipH / 2);
       return { position: "fixed", top, left };
     }
     case "left": {
-      let left = targetRect.left - TIP_W - PAD;
-      if (left < 0) left = targetRect.left + targetRect.width + PAD;
-      let top = targetRect.top + targetRect.height / 2 - TIP_H / 2;
-      top = Math.max(PAD, Math.min(top, vh - TIP_H - PAD));
+      let left = targetRect.left - tipW - PAD;
+      // Flip to right if it would overflow left edge
+      if (left < PAD) left = targetRect.left + targetRect.width + PAD;
+      const top = clampTop(targetRect.top + targetRect.height / 2 - tipH / 2);
       return { position: "fixed", top, left };
     }
     case "top": {
-      let top = targetRect.top - TIP_H - PAD;
-      if (top < 0) top = targetRect.top + targetRect.height + PAD;
-      let left = targetRect.left + targetRect.width / 2 - TIP_W / 2;
-      left = Math.max(PAD, Math.min(left, vw - TIP_W - PAD));
+      let top = targetRect.top - tipH - PAD;
+      // Flip to bottom if it would overflow top edge
+      if (top < PAD) top = targetRect.top + targetRect.height + PAD;
+      const left = clampLeft(targetRect.left + targetRect.width / 2 - tipW / 2);
       return { position: "fixed", top, left };
     }
     case "bottom":
     default: {
       let top = targetRect.top + targetRect.height + PAD;
-      if (top + TIP_H > vh) top = targetRect.top - TIP_H - PAD;
-      let left = targetRect.left + targetRect.width / 2 - TIP_W / 2;
-      left = Math.max(PAD, Math.min(left, vw - TIP_W - PAD));
+      // Flip to top if it would overflow bottom edge
+      if (top + tipH > vh - PAD) top = targetRect.top - tipH - PAD;
+      top = Math.max(PAD, top);
+      const left = clampLeft(targetRect.left + targetRect.width / 2 - tipW / 2);
       return { position: "fixed", top, left };
     }
   }
@@ -53,73 +70,52 @@ function getTooltipStyle(targetRect: Rect | null, position: string): React.CSSPr
 
 function SpotlightOverlay({ targetRect }: { targetRect: Rect | null }) {
   const PAD = 8;
+
   if (!targetRect) {
     return (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-[9998] pointer-events-none transition-all duration-500" />
+      <div className="fixed inset-0 bg-black/55 z-[9998] pointer-events-none" />
     );
   }
 
-  const { top, left, width, height } = targetRect;
-  const spotTop = top - PAD;
-  const spotLeft = left - PAD;
-  const spotW = width + PAD * 2;
-  const spotH = height + PAD * 2;
+  const spotTop  = targetRect.top  - PAD;
+  const spotLeft = targetRect.left - PAD;
+  const spotW    = targetRect.width  + PAD * 2;
+  const spotH    = targetRect.height + PAD * 2;
 
   return (
     <svg
-      className="fixed inset-0 z-[9998] pointer-events-none transition-all duration-500"
-      width="100%"
-      height="100%"
-      style={{ position: "fixed", top: 0, left: 0 }}
+      className="fixed inset-0 z-[9998] pointer-events-none"
+      style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh" }}
     >
       <defs>
         <mask id="tour-spotlight-mask">
           <rect width="100%" height="100%" fill="white" />
-          <rect
-            x={spotLeft}
-            y={spotTop}
-            width={spotW}
-            height={spotH}
-            rx="12"
-            fill="black"
-          />
+          <rect x={spotLeft} y={spotTop} width={spotW} height={spotH} rx="10" fill="black" />
         </mask>
       </defs>
+      <rect width="100%" height="100%" fill="rgba(0,0,0,0.62)" mask="url(#tour-spotlight-mask)" />
       <rect
-        width="100%"
-        height="100%"
-        fill="rgba(0,0,0,0.65)"
-        mask="url(#tour-spotlight-mask)"
-      />
-      {/* Spotlight ring */}
-      <rect
-        x={spotLeft - 2}
-        y={spotTop - 2}
-        width={spotW + 4}
-        height={spotH + 4}
-        rx="14"
-        fill="none"
-        stroke="rgba(99,102,241,0.8)"
-        strokeWidth="2"
+        x={spotLeft - 2} y={spotTop - 2}
+        width={spotW + 4} height={spotH + 4}
+        rx="12" fill="none"
+        stroke="rgba(99,102,241,0.85)" strokeWidth="2"
       />
     </svg>
   );
 }
 
-// ── Step dots progress ────────────────────────────────────────────────────────
+// ── Progress dots ─────────────────────────────────────────────────────────────
 
 function ProgressDots({ total, current }: { total: number; current: number }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1.5 flex-wrap">
       {[...Array(total)].map((_, i) => (
         <div
           key={i}
           className={`rounded-full transition-all duration-300 ${
-            i === current
-              ? "w-4 h-1.5 bg-blue-500"
-              : i < current
-              ? "w-1.5 h-1.5 bg-blue-300"
-              : "w-1.5 h-1.5 bg-slate-200"
+            i === current   ? "w-4 h-1.5 bg-blue-500"
+            : i < current  ? "w-1.5 h-1.5 bg-blue-300"
+            :                "w-1.5 h-1.5 bg-slate-200"
           }`}
         />
       ))}
@@ -127,66 +123,77 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
   );
 }
 
-// ── Main GuidedTour component ─────────────────────────────────────────────────
+// ── Main GuidedTour ───────────────────────────────────────────────────────────
 
 export default function GuidedTour() {
   const { active, step, currentStep, totalSteps, nextStep, prevStep, endTour } = useTour();
-  const [targetRect, setTargetRect] = useState<Rect | null>(null);
-  const [visible, setVisible] = useState(false);
-  const animFrameRef = useRef<number>(0);
 
-  // Locate the DOM element for the current step's tourKey
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [targetRect, setTargetRect]   = useState<Rect | null>(null);
+  const [visible,    setVisible]      = useState(false);
+  const [tooltipPos, setTooltipPos]   = useState<React.CSSProperties>({
+    position: "fixed", top: -9999, left: -9999,
+  });
+
+  // ── Step change: locate target element ──────────────────────────────────────
   useEffect(() => {
     if (!active) { setVisible(false); return; }
 
-    const measureTarget = () => {
-      if (!step.tourKey) {
-        setTargetRect(null);
-        return;
-      }
-      const el = document.querySelector(`[data-tour="${step.tourKey}"]`) as HTMLElement | null;
-      if (el) {
-        const r = el.getBoundingClientRect();
-        setTargetRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-      } else {
-        setTargetRect(null);
-      }
-    };
+    setVisible(false);
+    setTargetRect(null);
 
-    // Small delay so React can render the new tab before measuring
+    // Longer delay when the step switches tabs so the new page has time to mount
+    const delay = step.tab ? 400 : 120;
+
     const t = setTimeout(() => {
-      measureTarget();
+      if (step.tourKey) {
+        const el = document.querySelector(`[data-tour="${step.tourKey}"]`) as HTMLElement | null;
+        if (el) {
+          const r = el.getBoundingClientRect();
+          setTargetRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+          // Scroll the element into view if needed (e.g. sidebar items)
+          el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+      }
       setVisible(true);
-    }, 200);
+    }, delay);
 
-    return () => {
-      clearTimeout(t);
-      cancelAnimationFrame(animFrameRef.current);
-    };
+    return () => clearTimeout(t);
   }, [active, step, currentStep]);
+
+  // ── After render: measure actual tooltip size and compute position ───────────
+  useLayoutEffect(() => {
+    if (!active || !visible) return;
+    const tip = tooltipRef.current;
+    if (!tip) return;
+
+    const tipH = tip.offsetHeight || 280;
+    const tipW = tip.offsetWidth  || 320;
+    setTooltipPos(getTooltipPosition(targetRect, step.position ?? "bottom", tipW, tipH));
+  }, [targetRect, visible, active, step, currentStep]);
 
   if (!active) return null;
 
-  const tooltipStyle = getTooltipStyle(targetRect, step.position ?? "bottom");
-  const isFirst = currentStep === 0;
-  const isLast = currentStep === totalSteps - 1;
-  const progress = Math.round(((currentStep + 1) / totalSteps) * 100);
+  const isFirst    = currentStep === 0;
+  const isLast     = currentStep === totalSteps - 1;
+  const progress   = Math.round(((currentStep + 1) / totalSteps) * 100);
 
   return (
     <>
-      <SpotlightOverlay targetRect={targetRect} />
+      <SpotlightOverlay targetRect={visible ? targetRect : null} />
 
-      {/* Tooltip card */}
+      {/* Tooltip card — initially placed off-screen; repositioned after measurement */}
       <div
-        className={`z-[9999] w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden transition-all duration-300 ${
-          visible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+        ref={tooltipRef}
+        className={`z-[9999] w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden transition-opacity duration-300 ${
+          visible ? "opacity-100" : "opacity-0"
         }`}
-        style={{ ...tooltipStyle, pointerEvents: "auto" }}
+        style={{ ...tooltipPos, pointerEvents: "auto" }}
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <Sparkles className="w-4 h-4 text-blue-200 shrink-0" />
               <p className="text-white font-bold text-sm leading-tight">{step.title}</p>
             </div>
@@ -197,7 +204,6 @@ export default function GuidedTour() {
               <X className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
-          {/* Progress bar */}
           <div className="mt-3 h-1 bg-white/20 rounded-full overflow-hidden">
             <div
               className="h-full bg-white rounded-full transition-all duration-500"
@@ -209,7 +215,6 @@ export default function GuidedTour() {
         {/* Body */}
         <div className="px-5 py-4">
           <p className="text-slate-600 text-sm leading-relaxed">{step.description}</p>
-
           {step.action && (
             <div className="mt-3 flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
               <MapPin className="w-3.5 h-3.5 text-blue-500 shrink-0" />
