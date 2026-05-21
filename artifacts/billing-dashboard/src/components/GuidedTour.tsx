@@ -151,8 +151,6 @@ export default function GuidedTour() {
         if (el) {
           const r = el.getBoundingClientRect();
           setTargetRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-          // Scroll the element into view if needed (e.g. sidebar items)
-          el.scrollIntoView({ block: "nearest", behavior: "smooth" });
         }
       }
       setVisible(true);

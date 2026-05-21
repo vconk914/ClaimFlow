@@ -205,7 +205,7 @@ export default function AIAssistant() {
   return (
     <>
       {/* Floating button */}
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
+      <div data-tour="ai-assistant-btn" className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
         {/* Tip bubble — only when closed */}
         {!open && (
           <div className="max-w-[220px] bg-card border border-border shadow-lg rounded-xl px-3 py-2 text-[11px] text-muted-foreground leading-snug animate-in fade-in slide-in-from-bottom-2 duration-300">

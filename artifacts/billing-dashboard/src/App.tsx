@@ -469,9 +469,7 @@ function AppShellInner({ onShowLanding, activeTab, onTabChange }: AppShellProps)
         </div>
       </div>
 
-      <div data-tour="ai-assistant-btn">
-        <AIAssistant />
-      </div>
+      <AIAssistant />
 
       <GuidedTour />
     </>
