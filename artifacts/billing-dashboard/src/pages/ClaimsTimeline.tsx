@@ -1,8 +1,7 @@
 import { useState, useMemo } from "react";
 import {
-  Activity, Search, Filter, ChevronRight, CheckCircle2, Clock, AlertTriangle,
-  DollarSign, Send, RotateCcw, RefreshCw, ShieldCheck, FilePlus, TrendingUp,
-  ArrowUpRight,
+  Activity, Search, ChevronRight, CheckCircle2, Clock, AlertTriangle,
+  DollarSign, Send, RotateCcw, RefreshCw, ShieldCheck, FilePlus,
 } from "lucide-react";
 import type { Claim, ClaimStatus } from "@/data/mockData";
 import { useClaimStore } from "@/context/ClaimStore";
@@ -143,18 +142,16 @@ function ClaimCard({ claim, onClick }: { claim: Claim; onClick: () => void }) {
   );
 }
 
-// ─── Stat pill ────────────────────────────────────────────────────────────────
+// ─── Summary KPI card ─────────────────────────────────────────────────────────
 
-function StatPill({
-  label, value, color, icon: Icon,
-}: { label: string; value: number | string; color: string; icon: any }) {
+function KpiCard({ label, value, sub, colorClass }: {
+  label: string; value: string | number; sub: string; colorClass?: string;
+}) {
   return (
-    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${color}`}>
-      <Icon className="w-3.5 h-3.5 shrink-0" />
-      <div>
-        <p className="text-sm font-bold leading-none">{value}</p>
-        <p className="text-[10px] font-medium leading-tight mt-0.5">{label}</p>
-      </div>
+    <div className={`rounded-xl p-4 border ${colorClass ?? "bg-card border-border"}`}>
+      <p className="text-[10px] font-semibold uppercase tracking-wide mb-1 opacity-70">{label}</p>
+      <p className="text-2xl font-bold leading-none">{value}</p>
+      <p className="text-xs mt-1 opacity-60">{sub}</p>
     </div>
   );
 }
@@ -223,32 +220,35 @@ export default function ClaimsTimeline() {
         </div>
       </div>
 
-      {/* Summary pills */}
-      <div className="flex flex-wrap gap-2">
-        <StatPill label="Total Claims"   value={stats.total}        color="bg-card border-border text-foreground"              icon={Activity}     />
-        <StatPill label="Pending"        value={stats.pending}      color="bg-amber-50 border-amber-200 text-amber-800"         icon={Clock}        />
-        <StatPill label="Denied"         value={stats.denied}       color="bg-red-50 border-red-200 text-red-800"               icon={AlertTriangle}/>
-        <StatPill label="Resubmitted"    value={stats.resubmitted}  color="bg-indigo-50 border-indigo-200 text-indigo-800"      icon={RefreshCw}    />
-        <StatPill label="Approved"       value={stats.approved}     color="bg-emerald-50 border-emerald-200 text-emerald-800"   icon={CheckCircle2} />
-        <StatPill label="Paid"           value={stats.paid}         color="bg-emerald-100 border-emerald-300 text-emerald-900"  icon={DollarSign}   />
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl border bg-blue-50 border-blue-200 text-blue-800">
-          <TrendingUp className="w-3.5 h-3.5" />
-          <div>
-            <p className="text-sm font-bold">{stats.cleanClaimRate}%</p>
-            <p className="text-[10px] font-medium">Clean Claim Rate</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl border bg-red-50 border-red-200 text-red-800">
-          <ArrowUpRight className="w-3.5 h-3.5" />
-          <div>
-            <p className="text-sm font-bold">${stats.revenueAtRisk.toLocaleString()}</p>
-            <p className="text-[10px] font-medium">Revenue at Risk</p>
-          </div>
-        </div>
+      {/* Summary stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <KpiCard
+          label="Total Claims"
+          value={stats.total}
+          sub={`${stats.cleanClaimRate}% clean claim rate`}
+        />
+        <KpiCard
+          label="Approved / Paid"
+          value={stats.approved + stats.paid}
+          sub={`${stats.paid} fully collected`}
+          colorClass="bg-emerald-50 border-emerald-200 text-emerald-800"
+        />
+        <KpiCard
+          label="Denied"
+          value={stats.denied}
+          sub={`$${stats.revenueAtRisk.toLocaleString()} at risk`}
+          colorClass="bg-red-50 border-red-200 text-red-800"
+        />
+        <KpiCard
+          label="In Progress"
+          value={stats.pending + stats.submitted + stats.resubmitted}
+          sub={`${stats.resubmitted} resubmitted`}
+          colorClass="bg-amber-50 border-amber-200 text-amber-800"
+        />
       </div>
 
       {/* Filters */}
-      <div className="bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         {/* Search */}
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

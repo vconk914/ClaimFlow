@@ -43,12 +43,12 @@ function categorize(factors: { label: string; impact: string }[]): FilterKey[] {
 // ── Category config ────────────────────────────────────────────────────────────
 
 const FILTER_CONFIG: Record<FilterKey, { label: string; icon: any; color: string; bg: string; border: string }> = {
-  all:           { label: "All",             icon: ClipboardList, color: "text-slate-600", bg: "bg-slate-100",   border: "border-slate-200"   },
-  critical:      { label: "Critical Risk",   icon: Zap,           color: "text-red-600",   bg: "bg-red-50",      border: "border-red-200"     },
-  auth:          { label: "Auth Required",   icon: ShieldAlert,   color: "text-orange-600",bg: "bg-orange-50",   border: "border-orange-200"  },
-  modifier:      { label: "Modifier Alert",  icon: AlertTriangle, color: "text-amber-600", bg: "bg-amber-50",    border: "border-amber-200"   },
-  coding:        { label: "Coding Issue",    icon: FileWarning,   color: "text-blue-600",  bg: "bg-blue-50",     border: "border-blue-200"    },
-  documentation: { label: "Documentation",  icon: FileCheck,     color: "text-violet-600",bg: "bg-violet-50",   border: "border-violet-200"  },
+  all:           { label: "All",             icon: ClipboardList, color: "text-muted-foreground",  bg: "bg-muted",        border: "border-border"        },
+  critical:      { label: "Critical Risk",   icon: Zap,           color: "text-red-600",            bg: "bg-red-50",       border: "border-red-200"       },
+  auth:          { label: "Auth Required",   icon: ShieldAlert,   color: "text-orange-600",         bg: "bg-orange-50",    border: "border-orange-200"    },
+  modifier:      { label: "Modifier Alert",  icon: AlertTriangle, color: "text-amber-600",          bg: "bg-amber-50",     border: "border-amber-200"     },
+  coding:        { label: "Coding Issue",    icon: FileWarning,   color: "text-blue-600",           bg: "bg-blue-50",      border: "border-blue-200"      },
+  documentation: { label: "Documentation",  icon: FileCheck,     color: "text-violet-600",         bg: "bg-violet-50",    border: "border-violet-200"    },
 };
 
 // ── Work queue item row ────────────────────────────────────────────────────────
@@ -60,11 +60,11 @@ function WorkQueueRow({ item, onOpen }: { item: WorkItem; onOpen: () => void }) 
   return (
     <div
       onClick={onOpen}
-      className={`group flex items-start gap-4 px-5 py-4 border-b border-slate-50 hover:bg-slate-50/80 cursor-pointer transition-colors ${
-        isHighRisk ? "bg-red-50/20" : ""
+      className={`group flex items-start gap-4 px-5 py-4 border-b border-border/40 hover:bg-muted/30 cursor-pointer transition-colors ${
+        isHighRisk ? "bg-red-500/[0.03]" : ""
       }`}
     >
-      {/* Risk arc / score */}
+      {/* Risk score */}
       <div className="shrink-0 flex flex-col items-center gap-1 w-14">
         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm ${dc.bg} ${dc.text} border ${dc.border}`}>
           {item.denialProbability}%
@@ -76,25 +76,25 @@ function WorkQueueRow({ item, onOpen }: { item: WorkItem; onOpen: () => void }) 
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3 mb-1.5">
           <div>
-            <span className="text-xs font-mono text-slate-400 mr-2">{item.claim.id}</span>
-            <span className="text-sm font-bold text-slate-900">{item.claim.patient}</span>
+            <span className="text-xs font-mono text-muted-foreground/50 mr-2">{item.claim.id}</span>
+            <span className="text-sm font-semibold text-foreground">{item.claim.patient}</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs text-slate-500">{item.claim.payer}</span>
-            <span className="text-xs font-mono font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">{item.claim.cpt}</span>
+            <span className="text-xs text-muted-foreground">{item.claim.payer}</span>
+            <span className="text-xs font-mono font-semibold bg-muted text-muted-foreground px-2 py-0.5 rounded">{item.claim.cpt}</span>
           </div>
         </div>
 
-        {/* Issue row */}
+        {/* Issue */}
         <div className="flex items-start gap-2 mb-2">
-          <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-slate-600 leading-relaxed">{item.topIssue}</p>
+          <AlertTriangle className="w-3.5 h-3.5 text-red-500/70 shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground leading-relaxed">{item.topIssue}</p>
         </div>
 
-        {/* Fix row */}
+        {/* Fix */}
         <div className="flex items-start gap-2">
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-          <p className="text-xs text-emerald-700 font-medium leading-relaxed">{item.suggestedFix}</p>
+          <p className="text-xs text-emerald-600 font-medium leading-relaxed">{item.suggestedFix}</p>
         </div>
 
         {/* Tags */}
@@ -109,7 +109,7 @@ function WorkQueueRow({ item, onOpen }: { item: WorkItem; onOpen: () => void }) 
               </span>
             );
           })}
-          <span className="ml-auto flex items-center gap-1 text-[10px] text-slate-400">
+          <span className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground/50">
             <DollarSign className="w-2.5 h-2.5" />
             Est. ${item.estimatedReimbursement} in {item.estimatedDaysToPayment}d
           </span>
@@ -117,30 +117,30 @@ function WorkQueueRow({ item, onOpen }: { item: WorkItem; onOpen: () => void }) 
       </div>
 
       {/* Arrow */}
-      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors shrink-0 mt-3" />
+      <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors shrink-0 mt-3" />
     </div>
   );
 }
 
-// ── Summary stat pill ──────────────────────────────────────────────────────────
+// ── Summary stat card ──────────────────────────────────────────────────────────
 
-function SummaryPill({ icon: Icon, label, value, color, bg }: {
-  icon: any; label: string; value: string | number; color: string; bg: string;
+function SummaryCard({ icon: Icon, label, value, color, bg, border }: {
+  icon: any; label: string; value: string | number; color: string; bg: string; border: string;
 }) {
   return (
-    <div className={`flex items-center gap-3 ${bg} rounded-2xl px-5 py-4 border border-white/50`}>
-      <div className="w-9 h-9 bg-white/60 rounded-xl flex items-center justify-center">
-        <Icon className={`w-4.5 h-4.5 w-[18px] h-[18px] ${color}`} />
+    <div className={`${bg} ${border} border rounded-xl px-4 py-3.5 flex items-center gap-3`}>
+      <div className="w-8 h-8 bg-card/70 rounded-lg flex items-center justify-center shrink-0">
+        <Icon className={`w-4 h-4 ${color}`} />
       </div>
       <div>
-        <p className={`text-xl font-black ${color}`}>{value}</p>
-        <p className="text-xs text-slate-500 font-medium">{label}</p>
+        <p className={`text-xl font-bold ${color} leading-none`}>{value}</p>
+        <p className="text-xs text-muted-foreground font-medium mt-0.5">{label}</p>
       </div>
     </div>
   );
 }
 
-// ── Urology quick-reference rules panel ──────────────────────────────────────
+// ── Urology quick-reference rules ──────────────────────────────────────────────
 
 const UROLOGY_RULES = [
   {
@@ -195,7 +195,6 @@ export default function DenialWorkQueue() {
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [showRules, setShowRules] = useState(false);
 
-  // Build work queue from pre-submission claims
   const workItems = useMemo<WorkItem[]>(() => {
     const preSubmission: ClaimStatus[] = ["Draft", "Scrubbed", "Submitted", "Pending", "Denied", "Corrected"];
     return claims
@@ -234,20 +233,17 @@ export default function DenialWorkQueue() {
       .sort((a, b) => b.denialProbability - a.denialProbability);
   }, [claims]);
 
-  // Filter
   const filtered = useMemo(() => {
     if (activeFilter === "all") return workItems;
     if (activeFilter === "critical") return workItems.filter(i => i.denialProbability > 60);
     return workItems.filter(i => i.category.includes(activeFilter));
   }, [workItems, activeFilter]);
 
-  // Summary stats
   const criticalCount  = workItems.filter(i => i.denialProbability > 60).length;
   const authCount      = workItems.filter(i => i.category.includes("auth")).length;
   const modifierCount  = workItems.filter(i => i.category.includes("modifier")).length;
   const revenueAtRisk  = workItems.filter(i => i.denialProbability > 40).reduce((s, i) => s + i.claim.amount, 0);
 
-  // Filter counts
   const filterCounts: Record<FilterKey, number> = {
     all: workItems.length,
     critical: criticalCount,
@@ -263,47 +259,44 @@ export default function DenialWorkQueue() {
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <ClipboardList className="w-5 h-5 text-red-600" />
-            <h1 className="text-2xl font-black text-foreground">Denial Prevention Queue</h1>
-          </div>
-          <p className="text-muted-foreground text-sm">
-            Pre-submission review of claims with elevated denial risk — resolve issues before they hit the payer
+          <h1 className="text-2xl font-bold text-foreground">Denial Prevention Queue</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Pre-submission review of claims with elevated denial risk — resolve issues before they reach the payer
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowRules(r => !r)}
-            className={`flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl border transition-colors ${
-              showRules ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-            }`}
-          >
-            <Info className="w-3.5 h-3.5" />
-            Urology Rules Reference
-          </button>
-        </div>
+        <button
+          onClick={() => setShowRules(r => !r)}
+          className={`flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl border transition-colors ${
+            showRules
+              ? "bg-foreground text-background border-foreground"
+              : "bg-card text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground"
+          }`}
+        >
+          <Info className="w-3.5 h-3.5" />
+          Urology Rules Reference
+        </button>
       </div>
 
-      {/* ── Summary pills ────────────────────────────────────────────────────── */}
+      {/* ── Summary cards ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <SummaryPill icon={Zap}         label="Critical Risk Claims"   value={criticalCount}               color="text-red-600"    bg="bg-red-50"    />
-        <SummaryPill icon={ShieldAlert} label="Auth Gaps Detected"      value={authCount}                   color="text-orange-600" bg="bg-orange-50" />
-        <SummaryPill icon={AlertTriangle} label="Modifier Alerts"       value={modifierCount}               color="text-amber-600"  bg="bg-amber-50"  />
-        <SummaryPill icon={DollarSign}  label="Revenue at Risk"         value={`$${(revenueAtRisk/1000).toFixed(1)}k`} color="text-slate-700"  bg="bg-slate-100" />
+        <SummaryCard icon={Zap}          label="Critical Risk"    value={criticalCount}                        color="text-red-600"    bg="bg-red-50"    border="border-red-200"    />
+        <SummaryCard icon={ShieldAlert}  label="Auth Gaps"        value={authCount}                            color="text-orange-600" bg="bg-orange-50" border="border-orange-200" />
+        <SummaryCard icon={AlertTriangle} label="Modifier Alerts" value={modifierCount}                        color="text-amber-600"  bg="bg-amber-50"  border="border-amber-200"  />
+        <SummaryCard icon={DollarSign}   label="Revenue at Risk"  value={`$${(revenueAtRisk / 1000).toFixed(1)}k`} color="text-foreground"  bg="bg-card"      border="border-border"     />
       </div>
 
       {/* ── Urology rules reference (collapsible) ───────────────────────────── */}
       {showRules && (
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-            <FileCheck className="w-4 h-4 text-blue-600" />
-            <h2 className="font-bold text-slate-900 text-sm">Urology Denial Prevention — Quick Reference Rules</h2>
-            <span className="ml-auto text-[10px] text-slate-400">Based on current payer LCDs and NCCI edits</span>
+        <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-border flex items-center gap-2">
+            <FileCheck className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Urology Denial Prevention — Quick Reference</h2>
+            <span className="ml-auto text-[10px] text-muted-foreground/60">Current payer LCDs and NCCI edits</span>
           </div>
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-border/40">
             {UROLOGY_RULES.map((rule, i) => (
-              <div key={i} className={`flex gap-4 px-6 py-4 ${rule.severity === "error" ? "bg-red-50/30" : "bg-amber-50/20"}`}>
-                <div className="shrink-0">
+              <div key={i} className={`flex gap-4 px-6 py-4 ${rule.severity === "error" ? "bg-red-500/[0.03]" : "bg-amber-500/[0.02]"}`}>
+                <div className="shrink-0 pt-0.5">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
                     rule.severity === "error"
                       ? "bg-red-50 text-red-600 border-red-200"
@@ -314,11 +307,11 @@ export default function DenialWorkQueue() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-1">
-                    <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{rule.cpt}</span>
-                    <span className="text-sm font-bold text-slate-800">{rule.title}</span>
+                    <span className="text-xs font-mono font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">{rule.cpt}</span>
+                    <span className="text-sm font-semibold text-foreground">{rule.title}</span>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed mb-1.5">{rule.rule}</p>
-                  <p className="text-[10px] text-slate-400">Applies to: {rule.payer}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-1.5">{rule.rule}</p>
+                  <p className="text-[10px] text-muted-foreground/60">Applies to: {rule.payer}</p>
                 </div>
               </div>
             ))}
@@ -327,10 +320,11 @@ export default function DenialWorkQueue() {
       )}
 
       {/* ── Work queue ──────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-        {/* Filters */}
-        <div className="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2 flex-wrap">
-          <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+      <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+
+        {/* Filter bar */}
+        <div className="px-5 py-3.5 border-b border-border flex items-center gap-2 flex-wrap">
+          <Filter className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
           {(Object.keys(FILTER_CONFIG) as FilterKey[]).map(f => {
             const cfg = FILTER_CONFIG[f];
             const Icon = cfg.icon;
@@ -343,41 +337,43 @@ export default function DenialWorkQueue() {
                 className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border ${
                   active
                     ? `${cfg.bg} ${cfg.color} ${cfg.border}`
-                    : "text-slate-500 border-transparent hover:bg-slate-100"
+                    : "text-muted-foreground border-transparent hover:bg-muted hover:text-foreground"
                 }`}
               >
                 <Icon className="w-3 h-3" />
                 {cfg.label}
-                <span className={`text-[10px] px-1 rounded-full ${active ? "bg-white/60" : "bg-slate-100 text-slate-400"}`}>
+                <span className={`text-[10px] px-1.5 rounded-full font-medium ${
+                  active ? "bg-card/50 text-current" : "bg-muted text-muted-foreground"
+                }`}>
                   {count}
                 </span>
               </button>
             );
           })}
-          <div className="ml-auto flex items-center gap-1 text-[10px] text-slate-400">
+          <div className="ml-auto flex items-center gap-1.5 text-[10px] text-muted-foreground/50">
             <RefreshCw className="w-3 h-3" />
             Live · {workItems.length} claims in queue
           </div>
         </div>
 
-        {/* Table header */}
-        <div className="px-5 py-2.5 bg-slate-50/60 border-b border-slate-100 flex items-center gap-4">
+        {/* Column headers */}
+        <div className="px-5 py-2.5 bg-muted/20 border-b border-border flex items-center gap-4">
           <div className="w-14 shrink-0">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Risk</span>
+            <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wide">Risk</span>
           </div>
           <div className="flex-1 grid grid-cols-3 gap-4">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Claim / Issue</span>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Suggested Fix</span>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Category</span>
+            <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wide">Claim / Issue</span>
+            <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wide">Suggested Fix</span>
+            <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wide">Category</span>
           </div>
         </div>
 
         {/* Items */}
         {filtered.length === 0 ? (
           <div className="py-16 text-center">
-            <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
-            <p className="font-bold text-slate-700">No items in this filter</p>
-            <p className="text-sm text-slate-400 mt-1">
+            <CheckCircle2 className="w-10 h-10 text-emerald-500/60 mx-auto mb-3" />
+            <p className="font-semibold text-foreground">No items in this filter</p>
+            <p className="text-sm text-muted-foreground mt-1">
               {activeFilter === "all"
                 ? "All active claims are at low denial risk."
                 : `No claims flagged with ${FILTER_CONFIG[activeFilter].label} issues.`}
@@ -395,11 +391,11 @@ export default function DenialWorkQueue() {
 
         {/* Footer */}
         {filtered.length > 0 && (
-          <div className="px-5 py-3 border-t border-slate-50 bg-slate-50/40 flex items-center justify-between">
-            <p className="text-[10px] text-slate-400">
+          <div className="px-5 py-3 border-t border-border/40 bg-muted/10 flex items-center justify-between">
+            <p className="text-[10px] text-muted-foreground/60">
               {filtered.length} claim{filtered.length !== 1 ? "s" : ""} · Click any row to review and take action
             </p>
-            <div className="flex items-center gap-1 text-[10px] text-blue-600 font-semibold">
+            <div className="flex items-center gap-1 text-[10px] text-primary font-semibold">
               <ArrowRight className="w-3 h-3" />
               Open in Scrubber to fix
             </div>
@@ -407,23 +403,23 @@ export default function DenialWorkQueue() {
         )}
       </div>
 
-      {/* ── Payer auth quick-check ───────────────────────────────────────────── */}
-      <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-6">
+      {/* ── Prior authorization reference table ─────────────────────────────── */}
+      <div className="bg-card border border-border rounded-2xl shadow-sm p-6">
         <div className="flex items-center gap-2 mb-5">
           <ShieldAlert className="w-4 h-4 text-orange-500" />
-          <h2 className="font-bold text-slate-900 text-sm">Prior Authorization Requirements by Payer</h2>
-          <span className="ml-auto text-[10px] text-slate-400">Urology-specific · Common procedures</span>
+          <h2 className="font-semibold text-foreground text-sm">Prior Authorization Requirements by Payer</h2>
+          <span className="ml-auto text-[10px] text-muted-foreground/60">Urology-specific · Common procedures</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-100">
+              <tr className="border-b border-border">
                 {["Procedure", "Medicare", "BlueCross", "Aetna", "Cigna", "UHC", "Medicaid"].map(h => (
-                  <th key={h} className="py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                  <th key={h} className="py-2 px-3 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wide whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-border/40">
               {[
                 { proc: "Cystoscopy (52000)",       vals: ["No","No","Yes","No","Yes","Yes"] },
                 { proc: "ESWL (50590)",             vals: ["MA only","No","Yes","Yes","Yes","Yes"] },
@@ -432,8 +428,8 @@ export default function DenialWorkQueue() {
                 { proc: "TURP (52601)",             vals: ["No","Yes","Yes","Yes","Yes","Yes"] },
                 { proc: "CT Urogram (74177)",       vals: ["No","Yes","Yes","Yes","Yes","Yes"] },
               ].map(row => (
-                <tr key={row.proc} className="hover:bg-slate-50 transition-colors">
-                  <td className="py-2.5 px-3 font-semibold text-slate-700 whitespace-nowrap">{row.proc}</td>
+                <tr key={row.proc} className="hover:bg-muted/30 transition-colors">
+                  <td className="py-2.5 px-3 font-medium text-foreground whitespace-nowrap">{row.proc}</td>
                   {row.vals.map((v, i) => (
                     <td key={i} className="py-2.5 px-3">
                       <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
@@ -455,7 +451,9 @@ export default function DenialWorkQueue() {
             </tbody>
           </table>
         </div>
-        <p className="text-[10px] text-slate-400 mt-4">MA = Medicare Advantage plans only. Verify with individual plan ID — requirements vary by region and plan contract.</p>
+        <p className="text-[10px] text-muted-foreground/50 mt-4">
+          MA = Medicare Advantage plans only. Verify with individual plan ID — requirements vary by region and plan contract.
+        </p>
       </div>
 
       {selectedClaim && (

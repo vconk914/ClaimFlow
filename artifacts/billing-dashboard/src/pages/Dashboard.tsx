@@ -573,7 +573,7 @@ function TodaysPrioritiesPanel({ roleId }: { roleId: string }) {
           {(["critical", "high", "medium", "info"] as const).map(u => {
             const cnt = visible.filter(p => p.urgency === u).length;
             if (!cnt) return null;
-            const cls = { critical: "bg-red-100 text-red-700", high: "bg-orange-100 text-orange-700", medium: "bg-amber-100 text-amber-700", info: "bg-blue-100 text-blue-700" }[u];
+            const cls = { critical: "bg-red-500/15 text-red-600", high: "bg-orange-500/15 text-orange-600", medium: "bg-amber-500/15 text-amber-600", info: "bg-blue-500/15 text-blue-600" }[u];
             return <span key={u} className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${cls}`}>{cnt}</span>;
           })}
         </div>
@@ -739,7 +739,7 @@ export default function Dashboard() {
           <p className="text-sm text-muted-foreground mt-0.5">Northgate Urology Associates · May 2024</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium px-3 py-1.5 rounded-full">
+          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 text-xs font-medium px-3 py-1.5 rounded-full">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             Live Data Feed
           </div>
@@ -896,11 +896,11 @@ export default function Dashboard() {
       </div>
 
       {/* Alert banner */}
-      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+      <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/25 rounded-xl p-4">
         <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-amber-800">Action Required: 23 Claims Awaiting Correction</p>
-          <p className="text-xs text-amber-700 mt-0.5">
+          <p className="text-sm font-semibold text-amber-700">Action Required: 23 Claims Awaiting Correction</p>
+          <p className="text-xs text-amber-600 mt-0.5">
             14 claims have missing modifiers and 9 have ICD-10 mismatches. Use the <strong>Claims Scrubber</strong> tab to identify and fix errors before resubmission.
           </p>
         </div>

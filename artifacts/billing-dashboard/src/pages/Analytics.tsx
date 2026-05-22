@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, Filter, Download, TrendingUp, CheckCircle, XCircle, Clock, ChevronUp, ChevronDown, GitBranch, AlertTriangle, Send, RotateCcw, RefreshCw, ShieldCheck, FilePlus, DollarSign } from "lucide-react";
+import { Search, Filter, Download, CheckCircle, Clock, ChevronUp, ChevronDown, GitBranch, AlertTriangle, Send, RotateCcw, RefreshCw, ShieldCheck, FilePlus, DollarSign } from "lucide-react";
 import type { ClaimStatus } from "@/data/mockData";
 import { useClaimStore } from "@/context/ClaimStore";
 import ClaimDetailModal from "@/components/ClaimDetailModal";
@@ -28,11 +28,14 @@ function StatusBadge({ status }: { status: ClaimStatus }) {
   );
 }
 
-function StatPill({ label, value, color }: { label: string; value: number; color: string }) {
+function KpiCard({ label, value, sub, colorClass }: {
+  label: string; value: string | number; sub: string; colorClass?: string;
+}) {
   return (
-    <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border ${color}`}>
-      <span className="text-2xl font-bold">{value}</span>
-      <span className="text-xs font-medium leading-tight">{label}</span>
+    <div className={`rounded-xl p-4 border ${colorClass ?? "bg-card border-border"}`}>
+      <p className="text-[10px] font-semibold uppercase tracking-wide mb-1 opacity-70">{label}</p>
+      <p className="text-2xl font-bold leading-none">{value}</p>
+      <p className="text-xs mt-1 opacity-60">{sub}</p>
     </div>
   );
 }
@@ -130,31 +133,30 @@ export default function Analytics() {
       </div>
 
       {/* Summary stats */}
-      <div className="flex flex-wrap gap-3">
-        <StatPill label="Total Claims"    value={stats.total}           color="bg-card border-border text-foreground" />
-        <StatPill label="Approved / Paid" value={stats.approved}        color="bg-emerald-50 border-emerald-200 text-emerald-800" />
-        <StatPill label="Denied"          value={stats.denied}          color="bg-red-50 border-red-200 text-red-800" />
-        <StatPill label="In Progress"     value={stats.pending}         color="bg-amber-50 border-amber-200 text-amber-800" />
-        <StatPill label="Pre-submission"  value={stats.scrubbed}        color="bg-blue-50 border-blue-200 text-blue-800" />
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-800">
-          <TrendingUp className="w-4 h-4" />
-          <div>
-            <span className="text-2xl font-bold">${stats.totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 0 })}</span>
-            <span className="text-xs font-medium ml-1.5">Collected</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-amber-50 border-amber-200 text-amber-800">
-          <span className="text-2xl font-bold">${stats.pendingRevenue.toLocaleString("en-US", { minimumFractionDigits: 0 })}</span>
-          <span className="text-xs font-medium">Pending</span>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-red-50 border-red-200 text-red-800">
-          <span className="text-2xl font-bold">${stats.atRisk.toLocaleString("en-US", { minimumFractionDigits: 0 })}</span>
-          <span className="text-xs font-medium">At Risk</span>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-blue-50 border-blue-200 text-blue-800">
-          <span className="text-2xl font-bold">{stats.cleanClaimRate}%</span>
-          <span className="text-xs font-medium">Clean Claim Rate</span>
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <KpiCard
+          label="Total Claims"
+          value={stats.total}
+          sub={`${stats.cleanClaimRate}% clean claim rate`}
+        />
+        <KpiCard
+          label="Approved / Paid"
+          value={stats.approved}
+          sub={`$${stats.totalRevenue.toLocaleString("en-US")} collected`}
+          colorClass="bg-emerald-50 border-emerald-200 text-emerald-800"
+        />
+        <KpiCard
+          label="Denied"
+          value={stats.denied}
+          sub={`$${stats.atRisk.toLocaleString("en-US")} at risk`}
+          colorClass="bg-red-50 border-red-200 text-red-800"
+        />
+        <KpiCard
+          label="In Progress"
+          value={stats.pending}
+          sub={`$${stats.pendingRevenue.toLocaleString("en-US")} pending`}
+          colorClass="bg-amber-50 border-amber-200 text-amber-800"
+        />
       </div>
 
       {/* Table card */}
