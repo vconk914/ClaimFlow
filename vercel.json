@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm -w exec -- tsc --build && pnpm --filter @workspace/billing-dashboard run typecheck && pnpm --filter @workspace/billing-dashboard run build",
-  "outputDirectory": "dist/public",
-  "installCommand": "pnpm install --frozen-lockfile"
+  "framework": "vite",
+  "buildCommand": "pnpm -w exec -- tsc --build && pnpm --filter @workspace/billing-dashboard run build",
+  "outputDirectory": "dist/public"
 }
