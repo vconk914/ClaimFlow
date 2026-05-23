@@ -1,5 +1,5 @@
 {
   "buildCommand": "pnpm -w exec -- tsc --build && pnpm --filter @workspace/billing-dashboard run build",
-  "outputDirectory": "artifacts/billing-dashboard/dist/public",
+  "outputDirectory": "artifacts/billing-dashboard/public",
   "installCommand": "pnpm install --frozen-lockfile"
 }
